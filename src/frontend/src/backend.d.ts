@@ -62,6 +62,7 @@ export interface backendInterface {
     clearArticles(): Promise<void>;
     deleteArticle(id: ArticleId): Promise<void>;
     fetchBusinessNews(): Promise<string>;
+    fetchIndiaNews(): Promise<string>;
     fetchCricketNews(): Promise<string>;
     fetchHeadlines(): Promise<string>;
     fetchSportsNews(): Promise<string>;

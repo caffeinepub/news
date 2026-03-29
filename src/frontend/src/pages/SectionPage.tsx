@@ -43,10 +43,17 @@ const SECTION_CONFIG: Record<
     description: "Markets, economy, trade & finance updates",
     bgClass: "bg-background",
   },
+  india: {
+    title: "India News",
+    icon: "🇮🇳",
+    description:
+      "Latest news from India — ANI, NDTV, Times of India, Hindustan Times, PTI & more",
+    bgClass: "bg-background",
+  },
 };
 
 interface SectionPageProps {
-  section: "latest" | "world" | "sports" | "cricket" | "business";
+  section: "latest" | "world" | "sports" | "cricket" | "business" | "india";
   onNavigate: (page: PageName) => void;
   onBack: () => void;
   onOpenArticle: (article: Article) => void;
@@ -65,6 +72,7 @@ export default function SectionPage({
     sports,
     cricket,
     business,
+    india,
     isLoading,
     error,
     refresh,
@@ -78,6 +86,7 @@ export default function SectionPage({
     sports: sports,
     cricket: cricket,
     business: business,
+    india: india,
   };
 
   const articles = articlesMap[section] ?? [];

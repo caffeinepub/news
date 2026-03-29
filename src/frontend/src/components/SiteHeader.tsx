@@ -17,6 +17,7 @@ const NAV_LINKS: { label: string; page: PageName }[] = [
   { label: "Sports", page: "sports" },
   { label: "Cricket & IPL", page: "cricket" },
   { label: "Business", page: "business" },
+  { label: "India", page: "india" },
 ];
 
 const LANGUAGES = [

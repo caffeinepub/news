@@ -9,6 +9,7 @@ import ContactPage from "./pages/ContactPage";
 import HomePage from "./pages/HomePage";
 import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
 import SectionPage from "./pages/SectionPage";
+import TermsOfServicePage from "./pages/TermsOfServicePage";
 
 export type PageName =
   | "home"
@@ -20,7 +21,9 @@ export type PageName =
   | "admin"
   | "about"
   | "contact"
-  | "privacy";
+  | "privacy"
+  | "terms"
+  | "india";
 
 const queryClient = new QueryClient();
 
@@ -35,6 +38,8 @@ const PAGE_TITLES: Record<PageName, string> = {
   about: "About Us | NEWS",
   contact: "Contact Us | NEWS",
   privacy: "Privacy Policy | NEWS",
+  terms: "Terms of Service | NEWS",
+  india: "India News - Latest Headlines | NEWS",
 };
 
 function removeArticleJsonLd() {
@@ -135,12 +140,17 @@ function AppContent() {
     return <PrivacyPolicyPage onNavigate={setCurrentPage} />;
   }
 
+  if (currentPage === "terms") {
+    return <TermsOfServicePage onNavigate={setCurrentPage} />;
+  }
+
   if (
     currentPage === "latest" ||
     currentPage === "world" ||
     currentPage === "sports" ||
     currentPage === "cricket" ||
-    currentPage === "business"
+    currentPage === "business" ||
+    currentPage === "india"
   ) {
     return (
       <SectionPage

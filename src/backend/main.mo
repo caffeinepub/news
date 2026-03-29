@@ -30,6 +30,8 @@ actor {
   var cricketCacheTime : Int = 0;
   var businessCache : Text = "";
   var businessCacheTime : Int = 0;
+  var indiaCache : Text = "";
+  var indiaCacheTime : Int = 0;
 
   type ArticleId = Nat;
   public type Category = {
@@ -241,6 +243,17 @@ actor {
     let result = await fetchGNewsRaw(baseUrl # "/search?q=cricket+IPL&max=6&lang=en");
     cricketCache := result;
     cricketCacheTime := now;
+    result;
+  };
+
+  public shared func fetchIndiaNews() : async Text {
+    let now = Time.now();
+    if (indiaCache != "" and (now - indiaCacheTime) < cacheDuration) {
+      return indiaCache;
+    };
+    let result = await fetchGNewsRaw(baseUrl # "/top-headlines?country=in&max=8&lang=en");
+    indiaCache := result;
+    indiaCacheTime := now;
     result;
   };
 

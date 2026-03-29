@@ -63,6 +63,7 @@ export default function HomePage({ onNavigate, onOpenArticle }: HomePageProps) {
     sports,
     cricket,
     business,
+    india,
     isLoading,
     error,
     refresh,
@@ -76,6 +77,7 @@ export default function HomePage({ onNavigate, onOpenArticle }: HomePageProps) {
   const sportsList = sports;
   const worldList = world.slice(0, 4);
   const businessList = business.slice(0, 4);
+  const indiaList = india.slice(0, 4);
 
   const tickerHeadlines = [
     ...(featured ? [featured.title] : []),
@@ -463,6 +465,47 @@ export default function HomePage({ onNavigate, onOpenArticle }: HomePageProps) {
                 data-ocid="business.secondary_button"
               >
                 View All Business <ChevronRight size={16} className="ml-1" />
+              </Button>
+            </div>
+          </div>
+        </section>
+
+        {/* India News */}
+        <section id="india" className="section-tinted py-10">
+          <div className="container mx-auto px-4">
+            <SectionHeader
+              title="India News"
+              onViewAll={() => onNavigate("india")}
+            />
+            {isLoading ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {[...Array(4)].map((_, i) => (
+                  // biome-ignore lint/suspicious/noArrayIndexKey: skeleton list
+                  <Skeleton key={i} className="h-52 rounded-sm" />
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {indiaList.map((article, i) => (
+                  <div key={article.title} data-ocid={`india.item.${i + 1}`}>
+                    <NewsCard
+                      article={article}
+                      variant="grid"
+                      index={i + 70}
+                      onOpen={onOpenArticle}
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+            <div className="mt-5 text-center">
+              <Button
+                variant="outline"
+                onClick={() => onNavigate("india")}
+                className="border-news-red text-news-red hover:bg-news-red hover:text-white transition-colors text-xs font-bold uppercase tracking-widest rounded-sm"
+                data-ocid="india.primary_button"
+              >
+                All India News
               </Button>
             </div>
           </div>

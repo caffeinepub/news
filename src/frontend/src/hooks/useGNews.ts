@@ -298,6 +298,7 @@ interface GNewsCache {
   tech: SerializedArticle[];
   cricket: SerializedArticle[];
   business: SerializedArticle[];
+  india: SerializedArticle[];
 }
 
 function serializeArticle(a: Article): SerializedArticle {
@@ -327,6 +328,7 @@ function saveNewsCache(data: {
   tech: Article[];
   cricket: Article[];
   business: Article[];
+  india: Article[];
 }) {
   try {
     const entry: GNewsCache = {
@@ -337,6 +339,7 @@ function saveNewsCache(data: {
       tech: data.tech.map(serializeArticle),
       cricket: data.cricket.map(serializeArticle),
       business: data.business.map(serializeArticle),
+      india: data.india.map(serializeArticle),
     };
     localStorage.setItem(GNEWS_CACHE_KEY, JSON.stringify(entry));
   } catch {
@@ -352,6 +355,7 @@ export interface LiveNews {
   tech: Article[];
   cricket: Article[];
   business: Article[];
+  india: Article[];
   isLoading: boolean;
   error: string | null;
   refresh: () => void;
@@ -366,6 +370,7 @@ export function useGNews(): LiveNews {
   const [tech, setTech] = useState<Article[]>([]);
   const [cricket, setCricket] = useState<Article[]>([]);
   const [business, setBusiness] = useState<Article[]>([]);
+  const [india, setIndia] = useState<Article[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -377,6 +382,7 @@ export function useGNews(): LiveNews {
       techArticles: Article[],
       cricketArticles: Article[],
       businessArticles: Article[],
+      indiaArticles: Article[],
     ) => {
       if (breakingArticles.length > 0) {
         setFeatured({ ...breakingArticles[0], isFeatured: true });
@@ -390,6 +396,7 @@ export function useGNews(): LiveNews {
       setTech(techArticles);
       setCricket(cricketArticles);
       setBusiness(businessArticles);
+      setIndia(indiaArticles);
     },
     [],
   );
@@ -406,6 +413,7 @@ export function useGNews(): LiveNews {
         actor.fetchTechNews(),
         actor.fetchCricketNews(),
         actor.fetchBusinessNews(),
+        actor.fetchIndiaNews(),
       ]);
 
       const getValue = (r: PromiseSettledResult<string>) =>
@@ -418,6 +426,7 @@ export function useGNews(): LiveNews {
         techJson,
         cricketJson,
         businessJson,
+        indiaJson,
       ] = results.map(getValue);
 
       const safeparse = async (
@@ -438,6 +447,7 @@ export function useGNews(): LiveNews {
         techRaw,
         cricketRaw,
         businessRaw,
+        indiaRaw,
       ] = await Promise.all([
         safeparse(headlinesJson),
         safeparse(worldJson),
@@ -445,6 +455,7 @@ export function useGNews(): LiveNews {
         safeparse(techJson),
         safeparse(cricketJson),
         safeparse(businessJson),
+        safeparse(indiaJson),
       ]);
 
       const totalLive =
@@ -453,7 +464,8 @@ export function useGNews(): LiveNews {
         sportsRaw.length +
         techRaw.length +
         cricketRaw.length +
-        businessRaw.length;
+        businessRaw.length +
+        indiaRaw.length;
 
       if (totalLive > 0) {
         // Got real live data — map, save to localStorage, display
@@ -475,6 +487,9 @@ export function useGNews(): LiveNews {
         const businessArticles = businessRaw.map((a) =>
           mapGNewsArticle(a, Category.world),
         );
+        const indiaArticles = indiaRaw.map((a) =>
+          mapGNewsArticle(a, Category.world),
+        );
 
         saveNewsCache({
           headlines: breakingArticles,
@@ -483,6 +498,7 @@ export function useGNews(): LiveNews {
           tech: techArticles,
           cricket: cricketArticles,
           business: businessArticles,
+          india: indiaArticles,
         });
 
         applyArticles(
@@ -494,6 +510,7 @@ export function useGNews(): LiveNews {
           techArticles,
           cricketArticles,
           businessArticles,
+          indiaArticles,
         );
         // No error — live data available
       } else {
@@ -507,6 +524,7 @@ export function useGNews(): LiveNews {
             cached.tech.map(deserializeArticle),
             cached.cricket.map(deserializeArticle),
             cached.business.map(deserializeArticle),
+            (cached.india ?? []).map(deserializeArticle),
           );
           // No error banner — showing previously fetched real news
         } else {
@@ -519,6 +537,7 @@ export function useGNews(): LiveNews {
             FALLBACK_TECH,
             FALLBACK_CRICKET,
             FALLBACK_BUSINESS,
+            [],
           );
         }
       }
@@ -533,6 +552,7 @@ export function useGNews(): LiveNews {
           cached.tech.map(deserializeArticle),
           cached.cricket.map(deserializeArticle),
           cached.business.map(deserializeArticle),
+          (cached.india ?? []).map(deserializeArticle),
         );
       } else {
         setError("fallback");
@@ -543,6 +563,7 @@ export function useGNews(): LiveNews {
           FALLBACK_TECH,
           FALLBACK_CRICKET,
           FALLBACK_BUSINESS,
+          [],
         );
       }
       console.error("GNews load failed:", e);
@@ -568,6 +589,7 @@ export function useGNews(): LiveNews {
     tech,
     cricket,
     business,
+    india,
     isLoading,
     error,
     refresh: load,

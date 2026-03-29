@@ -7,7 +7,7 @@ const SECTIONS = [
   "Latest",
   "World",
   "Sports",
-  "Politics",
+  "India",
   "Business",
   "Tech",
   "IPL",
@@ -94,6 +94,16 @@ export default function SiteFooter({ onNavigate }: SiteFooterProps) {
                   data-ocid="footer.privacy.link"
                 >
                   Privacy Policy
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={() => onNavigate?.("terms")}
+                  className="text-white/70 hover:text-news-red text-sm transition-colors text-left"
+                  data-ocid="footer.terms.link"
+                >
+                  Terms of Service
                 </button>
               </li>
             </ul>

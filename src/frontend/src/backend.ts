@@ -145,6 +145,7 @@ export interface backendInterface {
     clearArticles(): Promise<void>;
     deleteArticle(id: ArticleId): Promise<void>;
     fetchBusinessNews(): Promise<string>;
+    fetchIndiaNews(): Promise<string>;
     fetchCricketNews(): Promise<string>;
     fetchHeadlines(): Promise<string>;
     fetchSportsNews(): Promise<string>;
@@ -261,6 +262,21 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.fetchCricketNews();
+            return result;
+        }
+    }
+
+    async fetchIndiaNews(): Promise<string> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.fetchIndiaNews();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.fetchIndiaNews();
             return result;
         }
     }

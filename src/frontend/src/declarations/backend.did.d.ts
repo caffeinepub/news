@@ -57,6 +57,7 @@ export interface _SERVICE {
   'clearArticles' : ActorMethod<[], undefined>,
   'deleteArticle' : ActorMethod<[ArticleId], undefined>,
   'fetchBusinessNews' : ActorMethod<[], string>,
+  'fetchIndiaNews' : ActorMethod<[], string>,
   'fetchCricketNews' : ActorMethod<[], string>,
   'fetchHeadlines' : ActorMethod<[], string>,
   'fetchSportsNews' : ActorMethod<[], string>,
