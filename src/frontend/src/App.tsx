@@ -11,6 +11,7 @@ export type PageName =
   | "world"
   | "sports"
   | "cricket"
+  | "business"
   | "admin";
 
 const queryClient = new QueryClient();
@@ -26,7 +27,8 @@ function AppContent() {
     currentPage === "latest" ||
     currentPage === "world" ||
     currentPage === "sports" ||
-    currentPage === "cricket"
+    currentPage === "cricket" ||
+    currentPage === "business"
   ) {
     return (
       <SectionPage

@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&family=Roboto+Condensed:wght@400;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&family=Roboto+Condensed:wght@400;700&family=Playfair+Display:wght@700;900&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -78,15 +78,45 @@
   animation-play-state: paused;
 }
 
-/* Section heading style */
+/* Breaking news label pulse */
+@keyframes breaking-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    box-shadow: 0 0 0 0 rgba(180, 20, 20, 0.6);
+  }
+  50% {
+    opacity: 0.9;
+    box-shadow: 0 0 0 4px rgba(180, 20, 20, 0);
+  }
+}
+
+.breaking-label {
+  animation: breaking-pulse 1.8s ease-in-out infinite;
+}
+
+/* Section heading style — red block + bold title */
 .section-heading {
   font-family: "Roboto Condensed", sans-serif;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  border-bottom: 3px solid oklch(var(--red-accent));
-  padding-bottom: 0.5rem;
+  letter-spacing: 0.06em;
+  font-size: 1.15rem;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: oklch(var(--foreground));
+}
+
+.section-heading::before {
+  content: "";
   display: inline-block;
+  width: 5px;
+  height: 1.4em;
+  background: oklch(var(--red-accent));
+  border-radius: 2px;
+  flex-shrink: 0;
 }
 
 /* 3D NEWS Logo */
@@ -144,4 +174,29 @@
   50% {
     filter: drop-shadow(0 0 14px rgba(255, 60, 60, 1));
   }
+}
+
+/* News card — elevated grid card */
+.news-card-grid {
+  background: #fff;
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.08);
+  border-top: 3px solid oklch(var(--red-accent));
+  transition: box-shadow 0.22s ease, transform 0.22s ease;
+  display: block;
+}
+
+.news-card-grid:hover {
+  box-shadow: 0 10px 32px 0 rgba(0, 0, 0, 0.18);
+  transform: translateY(-3px);
+}
+
+/* Sports / Business section gradient background */
+.section-tinted {
+  background: linear-gradient(
+    135deg,
+    oklch(0.96 0 0) 0%,
+    oklch(0.93 0.005 240) 100%
+  );
 }

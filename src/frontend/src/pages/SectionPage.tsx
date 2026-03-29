@@ -15,7 +15,7 @@ const SECTION_CONFIG: Record<
   latest: {
     title: "Latest News",
     icon: "📰",
-    description: "The most recent world news, updated live every 5 minutes",
+    description: "The most recent world news, updated live every 30 minutes",
     bgClass: "bg-background",
   },
   world: {
@@ -36,10 +36,16 @@ const SECTION_CONFIG: Record<
     description: "Live scores, IPL updates & international cricket news",
     bgClass: "bg-background",
   },
+  business: {
+    title: "Business News",
+    icon: "💼",
+    description: "Markets, economy, trade & finance updates",
+    bgClass: "bg-background",
+  },
 };
 
 interface SectionPageProps {
-  section: "latest" | "world" | "sports" | "cricket";
+  section: "latest" | "world" | "sports" | "cricket" | "business";
   onNavigate: (page: PageName) => void;
   onBack: () => void;
 }
@@ -55,6 +61,7 @@ export default function SectionPage({
     world,
     sports,
     cricket,
+    business,
     isLoading,
     error,
     refresh,
@@ -62,11 +69,12 @@ export default function SectionPage({
 
   const config = SECTION_CONFIG[section];
 
-  const articlesMap = {
+  const articlesMap: Record<string, typeof world> = {
     latest: world,
     world: world,
     sports: sports,
     cricket: cricket,
+    business: business,
   };
 
   const articles = articlesMap[section] ?? [];
@@ -88,7 +96,7 @@ export default function SectionPage({
           data-ocid="news.error_state"
         >
           <span className="text-yellow-800">
-            ⚠️ Unable to fetch live news — showing cached data
+            📰 Showing sample news — live updates will resume shortly
           </span>
         </div>
       )}

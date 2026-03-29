@@ -61,6 +61,7 @@ export interface backendInterface {
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
     clearArticles(): Promise<void>;
     deleteArticle(id: ArticleId): Promise<void>;
+    fetchBusinessNews(): Promise<string>;
     fetchCricketNews(): Promise<string>;
     fetchHeadlines(): Promise<string>;
     fetchSportsNews(): Promise<string>;

@@ -29,13 +29,19 @@ function SectionHeader({
   onViewAll,
 }: { title: string; onViewAll: () => void }) {
   return (
-    <div className="flex items-center gap-3 mb-6">
-      <h2 className="section-heading text-xl">{title}</h2>
-      <div className="flex-1 h-px bg-border" />
+    <div className="flex items-center gap-4 mb-6">
+      <h2 className="section-heading">{title}</h2>
+      <div
+        className="flex-1 h-px"
+        style={{
+          background:
+            "linear-gradient(90deg, oklch(0.43 0.18 25) 0%, oklch(0.87 0 0) 60%)",
+        }}
+      />
       <button
         type="button"
         onClick={onViewAll}
-        className="flex items-center gap-1 text-xs font-medium text-news-red hover:text-news-red-dark transition-colors uppercase tracking-wide whitespace-nowrap"
+        className="flex items-center gap-1 text-xs font-bold text-news-red hover:text-news-red-dark transition-colors uppercase tracking-widest whitespace-nowrap"
         data-ocid="section.link"
       >
         View All <ChevronRight size={14} />
@@ -55,6 +61,7 @@ export default function HomePage({ onNavigate }: HomePageProps) {
     world,
     sports,
     cricket,
+    business,
     isLoading,
     error,
     refresh,
@@ -67,6 +74,7 @@ export default function HomePage({ onNavigate }: HomePageProps) {
   const latestList = world.slice(0, 4);
   const sportsList = sports;
   const worldList = world.slice(0, 4);
+  const businessList = business.slice(0, 4);
 
   const tickerHeadlines = [
     ...(featured ? [featured.title] : []),
@@ -85,7 +93,7 @@ export default function HomePage({ onNavigate }: HomePageProps) {
           data-ocid="news.error_state"
         >
           <span className="text-yellow-800">
-            ⚠️ Unable to fetch live news — showing cached data
+            📰 Showing sample news — live updates will resume shortly
           </span>
           <button
             type="button"
@@ -130,8 +138,15 @@ export default function HomePage({ onNavigate }: HomePageProps) {
             </div>
 
             <div className="lg:col-span-1">
-              <div className="bg-card border border-border rounded-sm p-4">
-                <h2 className="font-condensed font-bold text-sm uppercase tracking-wider text-white bg-navy px-3 py-2 -mx-4 -mt-4 mb-4">
+              <div className="bg-card border border-border rounded-sm p-4 h-full">
+                <h2
+                  className="font-condensed font-bold text-sm uppercase tracking-widest text-white px-3 py-2.5 -mx-4 -mt-4 mb-4 flex items-center gap-2"
+                  style={{
+                    background:
+                      "linear-gradient(90deg, oklch(0.27 0.06 240), oklch(0.35 0.065 240))",
+                  }}
+                >
+                  <span className="inline-block w-1.5 h-4 bg-news-red rounded-sm" />
                   TOP HEADLINES
                 </h2>
                 {isLoading ? (
@@ -171,7 +186,7 @@ export default function HomePage({ onNavigate }: HomePageProps) {
         </section>
 
         {/* Latest News */}
-        <section id="latest" className="container mx-auto px-4 py-6">
+        <section id="latest" className="container mx-auto px-4 py-8">
           <SectionHeader
             title="Latest News"
             onViewAll={() => onNavigate("latest")}
@@ -201,6 +216,7 @@ export default function HomePage({ onNavigate }: HomePageProps) {
             <Button
               variant="outline"
               onClick={() => onNavigate("latest")}
+              className="border-news-red text-news-red hover:bg-news-red hover:text-white font-bold uppercase tracking-wider"
               data-ocid="latest.secondary_button"
             >
               View All Latest News <ChevronRight size={16} className="ml-1" />
@@ -209,12 +225,19 @@ export default function HomePage({ onNavigate }: HomePageProps) {
         </section>
 
         {/* Sports News */}
-        <section id="sports" className="bg-secondary py-8">
+        <section id="sports" className="section-tinted py-10">
           <div className="container mx-auto px-4">
-            <div className="bg-navy text-white rounded-sm px-6 py-4 mb-6 flex items-center gap-4">
+            <div
+              className="text-white rounded-sm px-6 py-5 mb-6 flex items-center gap-4"
+              style={{
+                background:
+                  "linear-gradient(135deg, oklch(0.27 0.06 240) 0%, oklch(0.22 0.065 240) 100%)",
+                borderLeft: "5px solid oklch(0.43 0.18 25)",
+              }}
+            >
               <span className="text-3xl">⚽</span>
               <div>
-                <h2 className="font-condensed font-bold text-xl uppercase tracking-wide">
+                <h2 className="font-condensed font-bold text-xl uppercase tracking-widest">
                   Sports News
                 </h2>
                 <p className="text-white/60 text-sm">
@@ -228,7 +251,7 @@ export default function HomePage({ onNavigate }: HomePageProps) {
                 <button
                   type="button"
                   onClick={() => onNavigate("sports")}
-                  className="flex items-center gap-1 text-white/80 hover:text-white text-xs font-medium uppercase tracking-wide transition-colors"
+                  className="flex items-center gap-1 text-white/80 hover:text-white text-xs font-bold uppercase tracking-widest transition-colors"
                   data-ocid="sports.link"
                 >
                   View All <ChevronRight size={14} />
@@ -279,7 +302,7 @@ export default function HomePage({ onNavigate }: HomePageProps) {
               <Button
                 variant="outline"
                 onClick={() => onNavigate("sports")}
-                className="border-navy text-navy hover:bg-navy hover:text-white"
+                className="border-navy text-navy hover:bg-navy hover:text-white font-bold uppercase tracking-wider"
                 data-ocid="sports.secondary_button"
               >
                 View All Sports <ChevronRight size={16} className="ml-1" />
@@ -289,11 +312,18 @@ export default function HomePage({ onNavigate }: HomePageProps) {
         </section>
 
         {/* Cricket & IPL */}
-        <section id="ipl" className="container mx-auto px-4 py-8">
-          <div className="bg-navy text-white rounded-sm px-6 py-4 mb-6 flex items-center gap-4">
+        <section id="ipl" className="container mx-auto px-4 py-10">
+          <div
+            className="text-white rounded-sm px-6 py-5 mb-6 flex items-center gap-4"
+            style={{
+              background:
+                "linear-gradient(135deg, oklch(0.27 0.06 240) 0%, oklch(0.22 0.065 240) 100%)",
+              borderLeft: "5px solid oklch(0.43 0.18 25)",
+            }}
+          >
             <span className="text-3xl">🏏</span>
             <div>
-              <h2 className="font-condensed font-bold text-xl uppercase tracking-wide">
+              <h2 className="font-condensed font-bold text-xl uppercase tracking-widest">
                 Cricket &amp; IPL
               </h2>
               <p className="text-white/60 text-sm">
@@ -307,7 +337,7 @@ export default function HomePage({ onNavigate }: HomePageProps) {
               <button
                 type="button"
                 onClick={() => onNavigate("cricket")}
-                className="flex items-center gap-1 text-white/80 hover:text-white text-xs font-medium uppercase tracking-wide transition-colors"
+                className="flex items-center gap-1 text-white/80 hover:text-white text-xs font-bold uppercase tracking-widest transition-colors"
                 data-ocid="cricket.link"
               >
                 View All <ChevronRight size={14} />
@@ -340,6 +370,7 @@ export default function HomePage({ onNavigate }: HomePageProps) {
             <Button
               variant="outline"
               onClick={() => onNavigate("cricket")}
+              className="border-news-red text-news-red hover:bg-news-red hover:text-white font-bold uppercase tracking-wider"
               data-ocid="cricket.secondary_button"
             >
               View All Cricket & IPL <ChevronRight size={16} className="ml-1" />
@@ -347,8 +378,74 @@ export default function HomePage({ onNavigate }: HomePageProps) {
           </div>
         </section>
 
+        {/* Business News */}
+        <section id="business" className="section-tinted py-10">
+          <div className="container mx-auto px-4">
+            <div
+              className="text-white rounded-sm px-6 py-5 mb-6 flex items-center gap-4"
+              style={{
+                background:
+                  "linear-gradient(135deg, oklch(0.27 0.06 240) 0%, oklch(0.22 0.065 240) 100%)",
+                borderLeft: "5px solid oklch(0.43 0.18 25)",
+              }}
+            >
+              <span className="text-3xl">💼</span>
+              <div>
+                <h2 className="font-condensed font-bold text-xl uppercase tracking-widest">
+                  Business News
+                </h2>
+                <p className="text-white/60 text-sm">
+                  Markets, economy, trade &amp; finance updates
+                </p>
+              </div>
+              <div className="ml-auto flex gap-3 items-center">
+                <button
+                  type="button"
+                  onClick={() => onNavigate("business")}
+                  className="flex items-center gap-1 text-white/80 hover:text-white text-xs font-bold uppercase tracking-widest transition-colors"
+                  data-ocid="business.link"
+                >
+                  View All <ChevronRight size={14} />
+                </button>
+              </div>
+            </div>
+
+            {isLoading ? (
+              <div
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5"
+                data-ocid="business.loading_state"
+              >
+                {["a", "b", "c", "d"].map((k) => (
+                  <Skeleton key={k} className="h-72 rounded-sm" />
+                ))}
+              </div>
+            ) : (
+              <div
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5"
+                data-ocid="business.list"
+              >
+                {businessList.map((article, i) => (
+                  <div key={article.title} data-ocid={`business.item.${i + 1}`}>
+                    <NewsCard article={article} variant="grid" index={i + 60} />
+                  </div>
+                ))}
+              </div>
+            )}
+            <div className="mt-5 text-center">
+              <Button
+                variant="outline"
+                onClick={() => onNavigate("business")}
+                className="border-navy text-navy hover:bg-navy hover:text-white font-bold uppercase tracking-wider"
+                data-ocid="business.secondary_button"
+              >
+                View All Business <ChevronRight size={16} className="ml-1" />
+              </Button>
+            </div>
+          </div>
+        </section>
+
         {/* World News */}
-        <section id="world" className="container mx-auto px-4 py-8">
+        <section id="world" className="container mx-auto px-4 py-10">
           <SectionHeader
             title="Worldwide News"
             onViewAll={() => onNavigate("world")}
@@ -378,6 +475,7 @@ export default function HomePage({ onNavigate }: HomePageProps) {
             <Button
               variant="outline"
               onClick={() => onNavigate("world")}
+              className="border-news-red text-news-red hover:bg-news-red hover:text-white font-bold uppercase tracking-wider"
               data-ocid="world.secondary_button"
             >
               View All World News <ChevronRight size={16} className="ml-1" />

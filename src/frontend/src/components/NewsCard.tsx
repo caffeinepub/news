@@ -62,7 +62,9 @@ export default function NewsCard({
           alt={article.title}
           className="w-full h-[400px] object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent" />
+        {/* Dual gradient: left-side drama + bottom readability */}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/20 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
         <div className="absolute bottom-0 left-0 right-0 p-6">
           <Badge className="bg-news-red text-white border-none text-xs mb-3">
             {catLabel}
@@ -81,10 +83,10 @@ export default function NewsCard({
             href={article.url || "#"}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-4 inline-block bg-news-red text-white text-sm font-medium px-5 py-2 uppercase tracking-wide hover:bg-news-red-dark transition-colors"
+            className="mt-4 inline-block bg-news-red text-white text-sm font-bold px-6 py-2.5 uppercase tracking-widest hover:bg-news-red-dark transition-colors"
             data-ocid="hero.primary_button"
           >
-            Read More
+            Read Full Story →
           </a>
         </div>
       </article>
@@ -142,13 +144,13 @@ export default function NewsCard({
     );
   }
 
-  // grid variant - fully clickable card
+  // grid variant — elevated card with red top accent
   return (
     <a
       href={article.url || "#"}
       target="_blank"
       rel="noopener noreferrer"
-      className={`bg-card rounded-sm overflow-hidden shadow-card hover:shadow-md transition-all group block ${className}`}
+      className={`news-card-grid group ${className}`}
     >
       <div className="overflow-hidden">
         <img
@@ -161,18 +163,21 @@ export default function NewsCard({
         <Badge className="bg-news-red text-white border-none text-xs mb-2">
           {catLabel}
         </Badge>
-        <h3 className="font-semibold text-base leading-snug line-clamp-2 mb-1">
+        <h3 className="font-bold text-base leading-snug line-clamp-2 mb-1 text-foreground">
           {article.title}
         </h3>
-        <p className="text-muted-foreground text-sm line-clamp-2 mb-2">
+        <p className="text-muted-foreground text-sm line-clamp-2 mb-3">
           {article.summary}
         </p>
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between border-t border-border pt-2">
           <div className="flex items-center gap-2 text-muted-foreground text-xs">
-            <span>{article.source}</span>
+            <span className="font-medium">{article.source}</span>
             {timeAgo && <span>• {timeAgo}</span>}
           </div>
-          <span className="text-news-red text-xs font-medium group-hover:underline">
+          <span
+            className="text-xs font-bold text-white bg-news-red px-2 py-0.5 group-hover:bg-news-red-dark transition-colors"
+            style={{ letterSpacing: "0.04em" }}
+          >
             Read →
           </span>
         </div>

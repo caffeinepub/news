@@ -32,15 +32,22 @@ export default function BreakingTicker({
   }
 
   return (
-    <div className="bg-white border-b border-border flex items-center overflow-hidden h-9">
-      <div className="bg-news-red text-white text-xs font-bold px-3 py-1 flex-shrink-0 uppercase tracking-wider h-full flex items-center">
-        Breaking News
+    <div
+      className="bg-white border-b border-border flex items-center overflow-hidden"
+      style={{ height: "2.6rem" }}
+    >
+      <div className="breaking-label bg-news-red text-white text-xs font-bold px-4 flex-shrink-0 uppercase tracking-widest h-full flex items-center gap-2 shadow-md">
+        <span
+          className="inline-block w-2 h-2 rounded-full bg-white animate-pulse"
+          aria-hidden="true"
+        />
+        Breaking
       </div>
       <div className="flex-1 overflow-hidden relative">
         <div className="ticker-scroll text-sm font-medium text-foreground py-1 px-4">
           {displayHeadlines.map((h) => (
             <span key={h}>
-              <span className="text-news-red font-bold mx-2">●</span>
+              <span className="text-news-red font-bold mx-3">◆</span>
               {h}
             </span>
           ))}

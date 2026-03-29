@@ -16,6 +16,7 @@ const NAV_LINKS: { label: string; page: PageName }[] = [
   { label: "World", page: "world" },
   { label: "Sports", page: "sports" },
   { label: "Cricket & IPL", page: "cricket" },
+  { label: "Business", page: "business" },
 ];
 
 const LANGUAGES = [
@@ -52,8 +53,15 @@ export default function SiteHeader({
   });
 
   return (
-    <header>
-      <div className="bg-navy text-white">
+    <header style={{ borderTop: "3px solid oklch(0.43 0.18 25)" }}>
+      {/* Top bar */}
+      <div
+        style={{
+          background:
+            "linear-gradient(180deg, oklch(0.30 0.07 240) 0%, oklch(0.24 0.065 240) 100%)",
+        }}
+        className="text-white"
+      >
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <button
             type="button"
@@ -126,7 +134,14 @@ export default function SiteHeader({
         </div>
       </div>
 
-      <nav className="bg-navy-dark border-t border-white/10">
+      {/* Nav bar */}
+      <nav
+        style={{
+          background:
+            "linear-gradient(180deg, oklch(0.22 0.065 240) 0%, oklch(0.19 0.06 240) 100%)",
+          borderTop: "1px solid rgba(255,255,255,0.08)",
+        }}
+      >
         <div className="container mx-auto px-4">
           <div className="hidden md:flex items-center justify-between">
             <ul className="flex">
@@ -135,11 +150,18 @@ export default function SiteHeader({
                   <button
                     type="button"
                     onClick={() => onNavigate(link.page)}
-                    className={`block px-4 py-2 text-xs font-medium transition-colors uppercase tracking-wide ${
+                    className={`block px-4 py-3 text-xs font-bold transition-all uppercase tracking-widest relative ${
                       currentPage === link.page
-                        ? "text-white bg-white/20"
-                        : "text-white/80 hover:text-white hover:bg-white/10"
+                        ? "text-white"
+                        : "text-white/70 hover:text-white"
                     }`}
+                    style={
+                      currentPage === link.page
+                        ? {
+                            borderBottom: "3px solid oklch(0.43 0.18 25)",
+                          }
+                        : { borderBottom: "3px solid transparent" }
+                    }
                     data-ocid="nav.link"
                   >
                     {link.label}
@@ -147,7 +169,7 @@ export default function SiteHeader({
                 </li>
               ))}
             </ul>
-            <span className="text-white/50 text-xs">{dateStr}</span>
+            <span className="text-white/40 text-xs font-medium">{dateStr}</span>
           </div>
           {mobileOpen && (
             <ul className="md:hidden py-2">

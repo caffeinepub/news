@@ -144,6 +144,7 @@ export interface backendInterface {
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
     clearArticles(): Promise<void>;
     deleteArticle(id: ArticleId): Promise<void>;
+    fetchBusinessNews(): Promise<string>;
     fetchCricketNews(): Promise<string>;
     fetchHeadlines(): Promise<string>;
     fetchSportsNews(): Promise<string>;
@@ -232,6 +233,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.deleteArticle(arg0);
+            return result;
+        }
+    }
+    async fetchBusinessNews(): Promise<string> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.fetchBusinessNews();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.fetchBusinessNews();
             return result;
         }
     }

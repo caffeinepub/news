@@ -56,6 +56,7 @@ export interface _SERVICE {
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
   'clearArticles' : ActorMethod<[], undefined>,
   'deleteArticle' : ActorMethod<[ArticleId], undefined>,
+  'fetchBusinessNews' : ActorMethod<[], string>,
   'fetchCricketNews' : ActorMethod<[], string>,
   'fetchHeadlines' : ActorMethod<[], string>,
   'fetchSportsNews' : ActorMethod<[], string>,
