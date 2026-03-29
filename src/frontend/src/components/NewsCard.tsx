@@ -38,6 +38,7 @@ interface NewsCardProps {
   index?: number;
   variant?: "hero" | "grid" | "small" | "sidebar";
   className?: string;
+  onOpen?: (article: Article) => void;
 }
 
 export default function NewsCard({
@@ -45,6 +46,7 @@ export default function NewsCard({
   index = 0,
   variant = "grid",
   className = "",
+  onOpen,
 }: NewsCardProps) {
   const imgUrl = getImageUrl(article, index);
   const cat =
@@ -79,21 +81,56 @@ export default function NewsCard({
             <span>{article.source}</span>
             {timeAgo && <span>• {timeAgo}</span>}
           </div>
-          <a
-            href={article.url || "#"}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-4 inline-block bg-news-red text-white text-sm font-bold px-6 py-2.5 uppercase tracking-widest hover:bg-news-red-dark transition-colors"
-            data-ocid="hero.primary_button"
-          >
-            Read Full Story →
-          </a>
+          {onOpen ? (
+            <button
+              type="button"
+              onClick={() => onOpen(article)}
+              className="mt-4 inline-block bg-news-red text-white text-sm font-bold px-6 py-2.5 uppercase tracking-widest hover:bg-news-red-dark transition-colors"
+              data-ocid="hero.primary_button"
+            >
+              Read Full Story →
+            </button>
+          ) : (
+            <a
+              href={article.url || "#"}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-4 inline-block bg-news-red text-white text-sm font-bold px-6 py-2.5 uppercase tracking-widest hover:bg-news-red-dark transition-colors"
+              data-ocid="hero.primary_button"
+            >
+              Read Full Story →
+            </a>
+          )}
         </div>
       </article>
     );
   }
 
   if (variant === "sidebar") {
+    if (onOpen) {
+      return (
+        <button
+          type="button"
+          onClick={() => onOpen(article)}
+          className={`w-full text-left flex gap-3 py-3 border-b border-border last:border-b-0 hover:bg-muted/30 transition-colors -mx-4 px-4 ${className}`}
+        >
+          <img
+            src={imgUrl}
+            alt={article.title}
+            className="w-20 h-16 object-cover flex-shrink-0 rounded-sm"
+          />
+          <div className="flex-1 min-w-0">
+            <Badge className="bg-news-red/10 text-news-red border-none text-xs px-1 py-0 mb-1">
+              {catLabel}
+            </Badge>
+            <h3 className="text-sm font-semibold leading-snug line-clamp-2 text-foreground">
+              {article.title}
+            </h3>
+            <span className="text-muted-foreground text-xs">{timeAgo}</span>
+          </div>
+        </button>
+      );
+    }
     return (
       <a
         href={article.url || "#"}
@@ -120,6 +157,29 @@ export default function NewsCard({
   }
 
   if (variant === "small") {
+    if (onOpen) {
+      return (
+        <button
+          type="button"
+          onClick={() => onOpen(article)}
+          className={`w-full text-left flex gap-3 mb-3 hover:bg-muted/30 transition-colors rounded-sm p-2 -mx-2 ${className}`}
+        >
+          <img
+            src={imgUrl}
+            alt={article.title}
+            className="w-24 h-18 object-cover flex-shrink-0 rounded-sm"
+          />
+          <div className="flex-1 min-w-0">
+            <h3 className="text-sm font-semibold leading-snug line-clamp-3 text-foreground">
+              {article.title}
+            </h3>
+            <span className="text-muted-foreground text-xs mt-1 block">
+              {article.source} • {timeAgo}
+            </span>
+          </div>
+        </button>
+      );
+    }
     return (
       <a
         href={article.url || "#"}
@@ -145,6 +205,47 @@ export default function NewsCard({
   }
 
   // grid variant — elevated card with red top accent
+  if (onOpen) {
+    return (
+      <button
+        type="button"
+        onClick={() => onOpen(article)}
+        className={`news-card-grid group w-full text-left ${className}`}
+      >
+        <div className="overflow-hidden">
+          <img
+            src={imgUrl}
+            alt={article.title}
+            className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+          />
+        </div>
+        <div className="p-4">
+          <Badge className="bg-news-red text-white border-none text-xs mb-2">
+            {catLabel}
+          </Badge>
+          <h3 className="font-bold text-base leading-snug line-clamp-2 mb-1 text-foreground">
+            {article.title}
+          </h3>
+          <p className="text-muted-foreground text-sm line-clamp-2 mb-3">
+            {article.summary}
+          </p>
+          <div className="flex items-center justify-between border-t border-border pt-2">
+            <div className="flex items-center gap-2 text-muted-foreground text-xs">
+              <span className="font-medium">{article.source}</span>
+              {timeAgo && <span>• {timeAgo}</span>}
+            </div>
+            <span
+              className="text-xs font-bold text-white bg-news-red px-2 py-0.5 group-hover:bg-news-red-dark transition-colors"
+              style={{ letterSpacing: "0.04em" }}
+            >
+              Read →
+            </span>
+          </div>
+        </div>
+      </button>
+    );
+  }
+
   return (
     <a
       href={article.url || "#"}

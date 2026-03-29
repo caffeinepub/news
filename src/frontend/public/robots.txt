@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Sitemap: https://news.icp0.io/sitemap.xml
+
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 1

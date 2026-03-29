@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SiFacebook, SiInstagram, SiX, SiYoutube } from "react-icons/si";
+import type { PageName } from "../App";
 
 const SECTIONS = [
   "Latest",
@@ -13,7 +14,11 @@ const SECTIONS = [
   "Cricket",
 ];
 
-export default function SiteFooter() {
+interface SiteFooterProps {
+  onNavigate?: (page: PageName) => void;
+}
+
+export default function SiteFooter({ onNavigate }: SiteFooterProps) {
   const year = new Date().getFullYear();
   const hostname =
     typeof window !== "undefined" ? window.location.hostname : "news";
@@ -58,6 +63,42 @@ export default function SiteFooter() {
 
           <div>
             <h3 className="font-condensed font-bold text-lg uppercase mb-4 border-b border-news-red pb-2">
+              Company
+            </h3>
+            <ul className="space-y-2">
+              <li>
+                <button
+                  type="button"
+                  onClick={() => onNavigate?.("about")}
+                  className="text-white/70 hover:text-news-red text-sm transition-colors text-left"
+                  data-ocid="footer.about.link"
+                >
+                  About Us
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={() => onNavigate?.("contact")}
+                  className="text-white/70 hover:text-news-red text-sm transition-colors text-left"
+                  data-ocid="footer.contact.link"
+                >
+                  Contact Us
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={() => onNavigate?.("privacy")}
+                  className="text-white/70 hover:text-news-red text-sm transition-colors text-left"
+                  data-ocid="footer.privacy.link"
+                >
+                  Privacy Policy
+                </button>
+              </li>
+            </ul>
+
+            <h3 className="font-condensed font-bold text-base uppercase mb-3 border-b border-news-red pb-2 mt-5">
               Follow Us
             </h3>
             <div className="flex gap-3 mt-2">
@@ -132,6 +173,23 @@ export default function SiteFooter() {
           <p className="text-white/50 text-xs">
             © {year} NEWS. All rights reserved.
           </p>
+          <div className="flex items-center gap-4">
+            <button
+              type="button"
+              onClick={() => onNavigate?.("privacy")}
+              className="text-white/40 text-xs hover:text-white/70 transition-colors"
+            >
+              Privacy Policy
+            </button>
+            <span className="text-white/20 text-xs">|</span>
+            <button
+              type="button"
+              onClick={() => onNavigate?.("contact")}
+              className="text-white/40 text-xs hover:text-white/70 transition-colors"
+            >
+              Contact
+            </button>
+          </div>
           <p className="text-white/40 text-xs">
             Built with ❤️ using{" "}
             <a

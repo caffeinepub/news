@@ -52,9 +52,10 @@ function SectionHeader({
 
 interface HomePageProps {
   onNavigate: (page: PageName) => void;
+  onOpenArticle: (article: Article) => void;
 }
 
-export default function HomePage({ onNavigate }: HomePageProps) {
+export default function HomePage({ onNavigate, onOpenArticle }: HomePageProps) {
   const {
     featured,
     headlines,
@@ -133,7 +134,12 @@ export default function HomePage({ onNavigate }: HomePageProps) {
                   data-ocid="hero.loading_state"
                 />
               ) : (
-                <NewsCard article={featuredArticle} variant="hero" index={0} />
+                <NewsCard
+                  article={featuredArticle}
+                  variant="hero"
+                  index={0}
+                  onOpen={onOpenArticle}
+                />
               )}
             </div>
 
@@ -175,6 +181,7 @@ export default function HomePage({ onNavigate }: HomePageProps) {
                           article={article}
                           variant="sidebar"
                           index={i + 10}
+                          onOpen={onOpenArticle}
                         />
                       </div>
                     ))}
@@ -207,7 +214,12 @@ export default function HomePage({ onNavigate }: HomePageProps) {
             >
               {latestList.map((article, i) => (
                 <div key={article.title} data-ocid={`latest.item.${i + 1}`}>
-                  <NewsCard article={article} variant="grid" index={i + 20} />
+                  <NewsCard
+                    article={article}
+                    variant="grid"
+                    index={i + 20}
+                    onOpen={onOpenArticle}
+                  />
                 </div>
               ))}
             </div>
@@ -282,6 +294,7 @@ export default function HomePage({ onNavigate }: HomePageProps) {
                       article={sportsList[0]}
                       variant="grid"
                       index={30}
+                      onOpen={onOpenArticle}
                     />
                   )}
                 </div>
@@ -292,6 +305,7 @@ export default function HomePage({ onNavigate }: HomePageProps) {
                         article={article}
                         variant="small"
                         index={i + 31}
+                        onOpen={onOpenArticle}
                       />
                     </div>
                   ))}
@@ -361,7 +375,12 @@ export default function HomePage({ onNavigate }: HomePageProps) {
             >
               {cricket.slice(0, 4).map((article, i) => (
                 <div key={article.title} data-ocid={`ipl.item.${i + 1}`}>
-                  <NewsCard article={article} variant="grid" index={i + 50} />
+                  <NewsCard
+                    article={article}
+                    variant="grid"
+                    index={i + 50}
+                    onOpen={onOpenArticle}
+                  />
                 </div>
               ))}
             </div>
@@ -426,7 +445,12 @@ export default function HomePage({ onNavigate }: HomePageProps) {
               >
                 {businessList.map((article, i) => (
                   <div key={article.title} data-ocid={`business.item.${i + 1}`}>
-                    <NewsCard article={article} variant="grid" index={i + 60} />
+                    <NewsCard
+                      article={article}
+                      variant="grid"
+                      index={i + 60}
+                      onOpen={onOpenArticle}
+                    />
                   </div>
                 ))}
               </div>
@@ -466,7 +490,12 @@ export default function HomePage({ onNavigate }: HomePageProps) {
             >
               {worldList.map((article, i) => (
                 <div key={article.title} data-ocid={`world.item.${i + 1}`}>
-                  <NewsCard article={article} variant="grid" index={i + 40} />
+                  <NewsCard
+                    article={article}
+                    variant="grid"
+                    index={i + 40}
+                    onOpen={onOpenArticle}
+                  />
                 </div>
               ))}
             </div>
@@ -484,7 +513,7 @@ export default function HomePage({ onNavigate }: HomePageProps) {
         </section>
       </main>
 
-      <SiteFooter />
+      <SiteFooter onNavigate={onNavigate} />
     </div>
   );
 }

@@ -7,6 +7,7 @@ import NewsCard from "../components/NewsCard";
 import SiteFooter from "../components/SiteFooter";
 import SiteHeader from "../components/SiteHeader";
 import { useGNews } from "../hooks/useGNews";
+import type { Article } from "../hooks/useQueries";
 
 const SECTION_CONFIG: Record<
   string,
@@ -48,12 +49,14 @@ interface SectionPageProps {
   section: "latest" | "world" | "sports" | "cricket" | "business";
   onNavigate: (page: PageName) => void;
   onBack: () => void;
+  onOpenArticle: (article: Article) => void;
 }
 
 export default function SectionPage({
   section,
   onNavigate,
   onBack,
+  onOpenArticle,
 }: SectionPageProps) {
   const {
     featured,
@@ -181,7 +184,12 @@ export default function SectionPage({
             >
               {articles.map((article, i) => (
                 <div key={article.title} data-ocid={`section.item.${i + 1}`}>
-                  <NewsCard article={article} variant="grid" index={i + 100} />
+                  <NewsCard
+                    article={article}
+                    variant="grid"
+                    index={i + 100}
+                    onOpen={onOpenArticle}
+                  />
                 </div>
               ))}
             </div>
@@ -189,7 +197,7 @@ export default function SectionPage({
         </section>
       </main>
 
-      <SiteFooter />
+      <SiteFooter onNavigate={onNavigate} />
     </div>
   );
 }
