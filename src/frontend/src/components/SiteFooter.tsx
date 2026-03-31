@@ -1,6 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { SiFacebook, SiInstagram, SiX, SiYoutube } from "react-icons/si";
+import {
+  SiFacebook,
+  SiInstagram,
+  SiTelegram,
+  SiWhatsapp,
+  SiX,
+  SiYoutube,
+} from "react-icons/si";
 import type { PageName } from "../App";
 
 const SECTIONS = [
@@ -12,6 +19,45 @@ const SECTIONS = [
   "Tech",
   "IPL",
   "Cricket",
+];
+
+const SOCIAL_LINKS = [
+  {
+    href: "https://facebook.com/NEWSglobal",
+    icon: SiFacebook,
+    label: "Facebook",
+    color: "hover:text-blue-500",
+  },
+  {
+    href: "https://instagram.com/NEWSglobal",
+    icon: SiInstagram,
+    label: "Instagram",
+    color: "hover:text-pink-500",
+  },
+  {
+    href: "https://x.com/NEWSglobal",
+    icon: SiX,
+    label: "Twitter/X",
+    color: "hover:text-white",
+  },
+  {
+    href: "https://youtube.com/@NEWSglobal",
+    icon: SiYoutube,
+    label: "YouTube",
+    color: "hover:text-red-500",
+  },
+  {
+    href: "https://t.me/NEWSglobal",
+    icon: SiTelegram,
+    label: "Telegram",
+    color: "hover:text-sky-400",
+  },
+  {
+    href: "https://whatsapp.com/channel/NEWSglobal",
+    icon: SiWhatsapp,
+    label: "WhatsApp",
+    color: "hover:text-green-400",
+  },
 ];
 
 interface SiteFooterProps {
@@ -107,52 +153,32 @@ export default function SiteFooter({ onNavigate }: SiteFooterProps) {
                 </button>
               </li>
             </ul>
-
-            <h3 className="font-condensed font-bold text-base uppercase mb-3 border-b border-news-red pb-2 mt-5">
-              Follow Us
-            </h3>
-            <div className="flex gap-3 mt-2">
-              <a
-                href="https://x.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-white/70 hover:text-white transition-colors"
-                aria-label="Twitter"
-              >
-                <SiX size={22} />
-              </a>
-              <a
-                href="https://facebook.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-white/70 hover:text-white transition-colors"
-                aria-label="Facebook"
-              >
-                <SiFacebook size={22} />
-              </a>
-              <a
-                href="https://youtube.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-white/70 hover:text-white transition-colors"
-                aria-label="YouTube"
-              >
-                <SiYoutube size={22} />
-              </a>
-              <a
-                href="https://instagram.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-white/70 hover:text-white transition-colors"
-                aria-label="Instagram"
-              >
-                <SiInstagram size={22} />
-              </a>
-            </div>
           </div>
 
           <div>
             <h3 className="font-condensed font-bold text-lg uppercase mb-4 border-b border-news-red pb-2">
+              Follow & Share
+            </h3>
+            <p className="text-white/60 text-xs mb-3">
+              Follow us on all platforms for latest news updates:
+            </p>
+            <div className="grid grid-cols-3 gap-3 mb-5">
+              {SOCIAL_LINKS.map(({ href, icon: Icon, label, color }) => (
+                <a
+                  key={label}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`flex flex-col items-center gap-1 p-2 rounded-lg bg-white/5 hover:bg-white/15 transition-all ${color}`}
+                  aria-label={label}
+                >
+                  <Icon size={22} />
+                  <span className="text-[10px] text-white/60">{label}</span>
+                </a>
+              ))}
+            </div>
+
+            <h3 className="font-condensed font-bold text-base uppercase mb-3 border-b border-news-red pb-2">
               Newsletter
             </h3>
             <p className="text-white/70 text-sm mb-3">
@@ -174,6 +200,64 @@ export default function SiteFooter({ onNavigate }: SiteFooterProps) {
                 Subscribe
               </Button>
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Share Site Banner */}
+      <div
+        className="border-t border-white/10 py-5"
+        style={{ background: "rgba(255,255,255,0.03)" }}
+      >
+        <div className="container mx-auto px-4 text-center">
+          <p className="text-white/60 text-sm mb-3">
+            Share NEWS with your friends & family:
+          </p>
+          <div className="flex flex-wrap justify-center gap-2">
+            <a
+              href={
+                "https://www.facebook.com/sharer/sharer.php?u=https://news-r9d.caffeine.xyz"
+              }
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold text-white transition-all hover:brightness-110"
+              style={{ background: "#1877F2" }}
+            >
+              <SiFacebook size={14} /> Share on Facebook
+            </a>
+            <a
+              href={
+                "https://twitter.com/intent/tweet?url=https://news-r9d.caffeine.xyz&text=Get+latest+breaking+news+from+around+the+world+on+NEWS!"
+              }
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold text-white transition-all hover:brightness-110"
+              style={{ background: "#000" }}
+            >
+              <SiX size={14} /> Share on X
+            </a>
+            <a
+              href={
+                "https://api.whatsapp.com/send?text=Get+latest+breaking+news+from+around+the+world%21+%F0%9F%93%B0+https://news-r9d.caffeine.xyz"
+              }
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold text-white transition-all hover:brightness-110"
+              style={{ background: "#25D366" }}
+            >
+              <SiWhatsapp size={14} /> Share on WhatsApp
+            </a>
+            <a
+              href={
+                "https://t.me/share/url?url=https://news-r9d.caffeine.xyz&text=Get+latest+breaking+news+on+NEWS!"
+              }
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold text-white transition-all hover:brightness-110"
+              style={{ background: "#229ED9" }}
+            >
+              <SiTelegram size={14} /> Share on Telegram
+            </a>
           </div>
         </div>
       </div>

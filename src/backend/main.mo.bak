@@ -14,7 +14,7 @@ import MixinAuthorization "authorization/MixinAuthorization";
 
 actor {
   let apiKey = "0f57e4f53dc04150badf7966d52ac545";
-  let baseUrl = "https://newsapi.org/v2";
+  let baseUrl = "https://gnews.io/api/v4";
   // 2 hours in nanoseconds
   let cacheDuration : Int = 2 * 60 * 60 * 1_000_000_000;
 
@@ -187,7 +187,7 @@ actor {
   };
 
   func fetchGNewsRaw(endpoint : Text) : async Text {
-    let url = endpoint # "&apiKey=" # apiKey;
+    let url = endpoint # "&apikey=" # apiKey;
     await OutCall.httpGetRequest(url, [], transform);
   };
 
@@ -196,7 +196,7 @@ actor {
     if (headlinesCache != "" and (now - headlinesCacheTime) < cacheDuration) {
       return headlinesCache;
     };
-    let result = await fetchGNewsRaw(baseUrl # "/top-headlines?category=general&pageSize=6&language=en");
+    let result = await fetchGNewsRaw(baseUrl # "/top-headlines?topic=breaking-news&max=6&lang=en");
     headlinesCache := result;
     headlinesCacheTime := now;
     result;
@@ -207,7 +207,7 @@ actor {
     if (worldCache != "" and (now - worldCacheTime) < cacheDuration) {
       return worldCache;
     };
-    let result = await fetchGNewsRaw(baseUrl # "/top-headlines?category=general&pageSize=8&language=en");
+    let result = await fetchGNewsRaw(baseUrl # "/top-headlines?topic=world&max=8&lang=en");
     worldCache := result;
     worldCacheTime := now;
     result;
@@ -218,7 +218,7 @@ actor {
     if (sportsCache != "" and (now - sportsCacheTime) < cacheDuration) {
       return sportsCache;
     };
-    let result = await fetchGNewsRaw(baseUrl # "/top-headlines?category=sports&pageSize=6&language=en");
+    let result = await fetchGNewsRaw(baseUrl # "/top-headlines?topic=sports&max=6&lang=en");
     sportsCache := result;
     sportsCacheTime := now;
     result;
@@ -229,7 +229,7 @@ actor {
     if (techCache != "" and (now - techCacheTime) < cacheDuration) {
       return techCache;
     };
-    let result = await fetchGNewsRaw(baseUrl # "/top-headlines?category=technology&pageSize=4&language=en");
+    let result = await fetchGNewsRaw(baseUrl # "/top-headlines?topic=technology&max=4&lang=en");
     techCache := result;
     techCacheTime := now;
     result;
@@ -240,7 +240,7 @@ actor {
     if (cricketCache != "" and (now - cricketCacheTime) < cacheDuration) {
       return cricketCache;
     };
-    let result = await fetchGNewsRaw(baseUrl # "/everything?q=cricket+IPL&pageSize=6&language=en&sortBy=publishedAt");
+    let result = await fetchGNewsRaw(baseUrl # "/search?q=cricket+IPL&max=6&lang=en");
     cricketCache := result;
     cricketCacheTime := now;
     result;
@@ -251,7 +251,7 @@ actor {
     if (indiaCache != "" and (now - indiaCacheTime) < cacheDuration) {
       return indiaCache;
     };
-    let result = await fetchGNewsRaw(baseUrl # "/top-headlines?country=in&pageSize=8");
+    let result = await fetchGNewsRaw(baseUrl # "/top-headlines?country=in&max=8&lang=en");
     indiaCache := result;
     indiaCacheTime := now;
     result;
@@ -262,7 +262,7 @@ actor {
     if (businessCache != "" and (now - businessCacheTime) < cacheDuration) {
       return businessCache;
     };
-    let result = await fetchGNewsRaw(baseUrl # "/top-headlines?category=business&pageSize=6&language=en");
+    let result = await fetchGNewsRaw(baseUrl # "/top-headlines?topic=business&max=6&lang=en");
     businessCache := result;
     businessCacheTime := now;
     result;

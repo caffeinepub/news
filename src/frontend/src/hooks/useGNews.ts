@@ -3,13 +3,36 @@ import { useActor } from "./useActor";
 import type { Article } from "./useQueries";
 import { Category } from "./useQueries";
 
+const REFRESH_INTERVAL_MS = 96 * 60 * 1000;
+const IST_OFFSET_MS = 5.5 * 60 * 60 * 1000;
+
+function getISTHour(): number {
+  const nowIST = new Date(Date.now() + IST_OFFSET_MS);
+  return nowIST.getUTCHours();
+}
+
+function isNightTime(): boolean {
+  const h = getISTHour();
+  return h >= 0 && h < 8;
+}
+
+function msUntilMorning(): number {
+  const nowIST = new Date(Date.now() + IST_OFFSET_MS);
+  const morning = new Date(nowIST);
+  morning.setUTCHours(8, 0, 0, 0);
+  if (morning.getTime() <= nowIST.getTime()) {
+    morning.setUTCDate(morning.getUTCDate() + 1);
+  }
+  return morning.getTime() - nowIST.getTime();
+}
+
 interface GNewsArticle {
   title: string;
   description: string;
   url: string;
-  image: string | null;
+  urlToImage: string | null;
   publishedAt: string;
-  source: { name: string; url: string };
+  source: { id: string | null; name: string };
 }
 
 interface GNewsResponse {
@@ -22,7 +45,7 @@ function mapGNewsArticle(a: GNewsArticle, cat: Category): Article {
     summary: a.description ?? "",
     url: a.url,
     imageUrl:
-      a.image ??
+      a.urlToImage ??
       `https://picsum.photos/seed/${encodeURIComponent(a.title.slice(0, 20))}/800/500`,
     source: a.source.name,
     category: cat,
@@ -401,8 +424,44 @@ export function useGNews(): LiveNews {
     [],
   );
 
+  const showCachedOrFallback = useCallback(
+    (withBanner: boolean) => {
+      const cached = loadNewsCache();
+      if (cached) {
+        applyArticles(
+          cached.headlines.map(deserializeArticle),
+          cached.world.map(deserializeArticle),
+          cached.sports.map(deserializeArticle),
+          cached.tech.map(deserializeArticle),
+          cached.cricket.map(deserializeArticle),
+          cached.business.map(deserializeArticle),
+          (cached.india ?? []).map(deserializeArticle),
+        );
+      } else {
+        if (withBanner) setError("fallback");
+        applyArticles(
+          FALLBACK_HEADLINES,
+          FALLBACK_WORLD,
+          FALLBACK_SPORTS,
+          FALLBACK_TECH,
+          FALLBACK_CRICKET,
+          FALLBACK_BUSINESS,
+          [],
+        );
+      }
+    },
+    [applyArticles],
+  );
+
   const load = useCallback(async () => {
     if (!actor) return;
+
+    if (isNightTime()) {
+      showCachedOrFallback(false);
+      setIsLoading(false);
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
     try {
@@ -512,73 +571,39 @@ export function useGNews(): LiveNews {
           businessArticles,
           indiaArticles,
         );
-        // No error — live data available
       } else {
-        // API returned no articles (quota likely exceeded) — try localStorage
-        const cached = loadNewsCache();
-        if (cached) {
-          applyArticles(
-            cached.headlines.map(deserializeArticle),
-            cached.world.map(deserializeArticle),
-            cached.sports.map(deserializeArticle),
-            cached.tech.map(deserializeArticle),
-            cached.cricket.map(deserializeArticle),
-            cached.business.map(deserializeArticle),
-            (cached.india ?? []).map(deserializeArticle),
-          );
-          // No error banner — showing previously fetched real news
-        } else {
-          // No cache either — show static fallback with banner
-          setError("fallback");
-          applyArticles(
-            FALLBACK_HEADLINES,
-            FALLBACK_WORLD,
-            FALLBACK_SPORTS,
-            FALLBACK_TECH,
-            FALLBACK_CRICKET,
-            FALLBACK_BUSINESS,
-            [],
-          );
-        }
+        // API returned no articles (quota likely exceeded) — try localStorage or fallback
+        showCachedOrFallback(true);
       }
     } catch (e) {
       // Network/canister error — try localStorage first
-      const cached = loadNewsCache();
-      if (cached) {
-        applyArticles(
-          cached.headlines.map(deserializeArticle),
-          cached.world.map(deserializeArticle),
-          cached.sports.map(deserializeArticle),
-          cached.tech.map(deserializeArticle),
-          cached.cricket.map(deserializeArticle),
-          cached.business.map(deserializeArticle),
-          (cached.india ?? []).map(deserializeArticle),
-        );
-      } else {
-        setError("fallback");
-        applyArticles(
-          FALLBACK_HEADLINES,
-          FALLBACK_WORLD,
-          FALLBACK_SPORTS,
-          FALLBACK_TECH,
-          FALLBACK_CRICKET,
-          FALLBACK_BUSINESS,
-          [],
-        );
-      }
+      showCachedOrFallback(false);
       console.error("GNews load failed:", e);
     } finally {
       setIsLoading(false);
     }
-  }, [actor, applyArticles]);
+  }, [actor, applyArticles, showCachedOrFallback]);
 
   useEffect(() => {
-    if (actor && !isFetching) {
-      load();
-      // Auto-refresh every 30 minutes
-      const interval = setInterval(load, 30 * 60 * 1000);
-      return () => clearInterval(interval);
+    if (!actor || isFetching) return;
+    load();
+
+    let intervalId: ReturnType<typeof setInterval>;
+    let timeoutId: ReturnType<typeof setTimeout>;
+
+    if (isNightTime()) {
+      timeoutId = setTimeout(() => {
+        load();
+        intervalId = setInterval(load, REFRESH_INTERVAL_MS);
+      }, msUntilMorning());
+    } else {
+      intervalId = setInterval(load, REFRESH_INTERVAL_MS);
     }
+
+    return () => {
+      clearTimeout(timeoutId);
+      clearInterval(intervalId);
+    };
   }, [actor, isFetching, load]);
 
   return {

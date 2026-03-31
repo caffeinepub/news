@@ -1,6 +1,14 @@
 import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNow } from "date-fns";
-import { ArrowLeft, ExternalLink } from "lucide-react";
+import { ArrowLeft, Copy, ExternalLink } from "lucide-react";
+import { useState } from "react";
+import {
+  SiFacebook,
+  SiInstagram,
+  SiTelegram,
+  SiWhatsapp,
+  SiX,
+} from "react-icons/si";
 import type { PageName } from "../App";
 import SiteFooter from "../components/SiteFooter";
 import SiteHeader from "../components/SiteHeader";
@@ -46,6 +54,7 @@ export default function ArticleDetailPage({
   onBack,
   onNavigate,
 }: ArticleDetailPageProps) {
+  const [copied, setCopied] = useState(false);
   const imgUrl = getImageUrl(article, 0);
   const cat =
     typeof article.category === "string"
@@ -66,6 +75,53 @@ export default function ArticleDetailPage({
       return "";
     }
   })();
+
+  const pageUrl =
+    typeof window !== "undefined"
+      ? window.location.href
+      : "https://news-r9d.caffeine.xyz";
+  const shareText = encodeURIComponent(`${article.title} | NEWS`);
+  const shareUrl = encodeURIComponent(pageUrl);
+
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(pageUrl).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
+
+  const SHARE_BUTTONS = [
+    {
+      label: "Facebook",
+      href: `https://www.facebook.com/sharer/sharer.php?u=${shareUrl}`,
+      icon: SiFacebook,
+      bg: "#1877F2",
+    },
+    {
+      label: "X / Twitter",
+      href: `https://twitter.com/intent/tweet?url=${shareUrl}&text=${shareText}`,
+      icon: SiX,
+      bg: "#000",
+    },
+    {
+      label: "WhatsApp",
+      href: `https://api.whatsapp.com/send?text=${shareText}+${shareUrl}`,
+      icon: SiWhatsapp,
+      bg: "#25D366",
+    },
+    {
+      label: "Telegram",
+      href: `https://t.me/share/url?url=${shareUrl}&text=${shareText}`,
+      icon: SiTelegram,
+      bg: "#229ED9",
+    },
+    {
+      label: "Instagram",
+      href: "https://www.instagram.com",
+      icon: SiInstagram,
+      bg: "linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888)",
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-background">
@@ -95,7 +151,6 @@ export default function ArticleDetailPage({
             className="w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-          {/* Red top accent bar */}
           <div
             className="absolute top-0 left-0 right-0 h-1"
             style={{ background: "oklch(0.43 0.18 25)" }}
@@ -113,7 +168,7 @@ export default function ArticleDetailPage({
         {/* Article Body */}
         <article className="container mx-auto px-4 py-10 max-w-3xl">
           {/* Byline */}
-          <div className="flex items-center gap-3 text-muted-foreground text-sm mb-8 pb-6 border-b border-border">
+          <div className="flex items-center gap-3 text-muted-foreground text-sm mb-6 pb-6 border-b border-border">
             <span
               className="font-bold text-foreground text-base"
               style={{ color: "oklch(0.43 0.18 25)" }}
@@ -132,6 +187,36 @@ export default function ArticleDetailPage({
                 <span>{timeAgo}</span>
               </>
             )}
+          </div>
+
+          {/* Social Share Buttons */}
+          <div className="mb-8 p-4 rounded-xl border border-border bg-card">
+            <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">
+              Share this news on:
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {SHARE_BUTTONS.map(({ label, href, icon: Icon, bg }) => (
+                <a
+                  key={label}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold text-white transition-all hover:opacity-90 hover:scale-105"
+                  style={{ background: bg }}
+                >
+                  <Icon size={14} />
+                  {label}
+                </a>
+              ))}
+              <button
+                type="button"
+                onClick={handleCopyLink}
+                className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold transition-all hover:opacity-90 hover:scale-105 border border-border text-foreground"
+              >
+                <Copy size={14} />
+                {copied ? "Copied!" : "Copy Link"}
+              </button>
+            </div>
           </div>
 
           {/* Summary / Story Body */}
@@ -178,6 +263,30 @@ export default function ArticleDetailPage({
               Read Full Article on {article.source}
               <ExternalLink size={15} />
             </a>
+          </div>
+
+          {/* Bottom Share Reminder */}
+          <div className="mt-8 p-4 rounded-xl bg-gradient-to-r from-blue-50 to-pink-50 dark:from-blue-950/20 dark:to-pink-950/20 border border-border">
+            <p className="text-sm font-semibold text-foreground mb-3">
+              Liked this news? Share it! 📲
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {SHARE_BUTTONS.slice(0, 4).map(
+                ({ label, href, icon: Icon, bg }) => (
+                  <a
+                    key={label}
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 px-3 py-2 rounded-full text-xs font-bold text-white transition-all hover:opacity-90"
+                    style={{ background: bg }}
+                  >
+                    <Icon size={13} />
+                    {label}
+                  </a>
+                ),
+              )}
+            </div>
           </div>
         </article>
       </main>
