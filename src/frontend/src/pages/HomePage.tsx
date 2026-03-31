@@ -1,12 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ChevronRight, RefreshCw } from "lucide-react";
+import { BookOpen, ChevronRight, ExternalLink, RefreshCw } from "lucide-react";
 import { useState } from "react";
 import type { PageName } from "../App";
 import BreakingTicker from "../components/BreakingTicker";
 import NewsCard from "../components/NewsCard";
 import SiteFooter from "../components/SiteFooter";
 import SiteHeader from "../components/SiteHeader";
+import { STORY_GENRES } from "../data/storiesData";
 import { useGNews } from "../hooks/useGNews";
 import type { Article } from "../hooks/useQueries";
 import { Category } from "../hooks/useQueries";
@@ -23,6 +24,29 @@ const FALLBACK_FEATURED: Article = {
   isPinned: false,
   publishedAt: BigInt(Date.now()) * BigInt(1_000_000),
 };
+
+const HOME_STORIES_CSS = `
+  @keyframes storiesHeroFloat {
+    0%, 100% { transform: perspective(600px) rotateX(0deg) translateZ(0px); letter-spacing: 0.1em; }
+    50% { transform: perspective(600px) rotateX(6deg) translateZ(12px); letter-spacing: 0.15em; }
+  }
+  @keyframes storiesShimmer {
+    0% { background-position: -200% center; }
+    100% { background-position: 200% center; }
+  }
+  .stories-preview-title {
+    animation: storiesHeroFloat 3.5s ease-in-out infinite, storiesShimmer 3.5s linear infinite;
+    display: inline-block;
+    transform-style: preserve-3d;
+    background: linear-gradient(90deg, #ff4466 0%, #ff8800 20%, #ffcc00 40%, #00cc77 60%, #0088ff 80%, #ff4466 100%);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+`;
+
+const PREVIEW_GENRES = STORY_GENRES.slice(0, 4);
 
 function SectionHeader({
   title,
@@ -86,6 +110,7 @@ export default function HomePage({ onNavigate, onOpenArticle }: HomePageProps) {
 
   return (
     <div className="min-h-screen bg-background">
+      <style>{HOME_STORIES_CSS}</style>
       <SiteHeader onNavigate={onNavigate} currentPage="home" />
       <BreakingTicker headlines={tickerHeadlines} />
 
@@ -552,6 +577,157 @@ export default function HomePage({ onNavigate, onOpenArticle }: HomePageProps) {
             >
               View All World News <ChevronRight size={16} className="ml-1" />
             </Button>
+          </div>
+        </section>
+
+        {/* Stories Section Preview */}
+        <section
+          id="stories"
+          className="py-14"
+          style={{
+            background:
+              "linear-gradient(180deg, oklch(0.16 0.055 240) 0%, oklch(0.13 0.045 250) 100%)",
+          }}
+          data-ocid="stories.section"
+        >
+          <div className="container mx-auto px-4">
+            {/* 3D Animated Section Header */}
+            <div className="text-center mb-10">
+              <div className="mb-3">
+                <span
+                  className="stories-preview-title font-bold uppercase"
+                  style={{ fontSize: "clamp(2.5rem, 7vw, 5rem)" }}
+                >
+                  STORIES
+                </span>
+              </div>
+              <p className="text-white/50 text-sm max-w-lg mx-auto">
+                Romantic • Thriller • Fantasy • Horror • Drama &amp; more —
+                updated daily from top story platforms
+              </p>
+            </div>
+
+            {/* Genre Preview Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
+              {PREVIEW_GENRES.map((genre) => {
+                const story = genre.stories[0];
+                return (
+                  <button
+                    key={genre.id}
+                    type="button"
+                    className="group relative overflow-hidden rounded cursor-pointer text-left w-full"
+                    style={{
+                      background: "oklch(0.20 0.06 240)",
+                      border: `1px solid ${genre.color}33`,
+                      transition: "transform 0.3s ease, box-shadow 0.3s ease",
+                    }}
+                    onClick={() => onNavigate("stories")}
+                    onMouseEnter={(e) => {
+                      (e.currentTarget as HTMLButtonElement).style.transform =
+                        "translateY(-5px)";
+                      (e.currentTarget as HTMLButtonElement).style.boxShadow =
+                        `0 16px 32px ${genre.glowColor}`;
+                    }}
+                    onMouseLeave={(e) => {
+                      (e.currentTarget as HTMLButtonElement).style.transform =
+                        "translateY(0)";
+                      (e.currentTarget as HTMLButtonElement).style.boxShadow =
+                        "none";
+                    }}
+                    data-ocid={`stories.item.${PREVIEW_GENRES.indexOf(genre) + 1}`}
+                  >
+                    {/* Cover Image */}
+                    <div
+                      className="relative overflow-hidden"
+                      style={{ paddingBottom: "70%" }}
+                    >
+                      <img
+                        src={`https://picsum.photos/seed/${story.coverSeed}/400/280`}
+                        alt={story.title}
+                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        loading="lazy"
+                      />
+                      <div
+                        className="absolute inset-0"
+                        style={{
+                          background: `linear-gradient(to top, ${genre.glowColor.replace("0.6", "0.9")} 0%, transparent 60%)`,
+                        }}
+                      />
+                      {/* Genre Label */}
+                      <div className="absolute bottom-3 left-3 right-3">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-2xl">{genre.emoji}</span>
+                          <span
+                            className="font-bold text-sm uppercase tracking-widest"
+                            style={{
+                              color: genre.color,
+                              textShadow: `0 0 12px ${genre.glowColor}`,
+                            }}
+                          >
+                            {genre.name}
+                          </span>
+                        </div>
+                        <p className="text-white/80 text-xs font-medium line-clamp-2">
+                          {story.title}
+                        </p>
+                      </div>
+                    </div>
+                    {/* Footer */}
+                    <div className="px-4 py-3 flex items-center justify-between">
+                      <span className="text-white/50 text-xs">
+                        {genre.stories.length} stories
+                      </span>
+                      <span
+                        className="text-xs font-bold flex items-center gap-1"
+                        style={{ color: genre.color }}
+                      >
+                        <BookOpen size={12} /> {genre.sourceSite}
+                      </span>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Genre chips row */}
+            <div className="flex flex-wrap justify-center gap-2 mb-8">
+              {STORY_GENRES.slice(4).map((genre) => (
+                <button
+                  key={genre.id}
+                  type="button"
+                  onClick={() => onNavigate("stories")}
+                  className="text-xs font-bold px-3 py-1.5 rounded-full transition-all hover:opacity-80"
+                  style={{
+                    background: `${genre.color}1a`,
+                    color: genre.color,
+                    border: `1px solid ${genre.color}44`,
+                  }}
+                  data-ocid={`stories.${genre.id}.tab`}
+                >
+                  {genre.emoji} {genre.name}
+                </button>
+              ))}
+            </div>
+
+            {/* CTA */}
+            <div className="text-center">
+              <button
+                type="button"
+                onClick={() => onNavigate("stories")}
+                className="inline-flex items-center gap-2 px-8 py-3 font-bold uppercase tracking-widest text-sm rounded transition-all hover:scale-105"
+                style={{
+                  background:
+                    "linear-gradient(135deg, #ff4466 0%, #ff8800 50%, #ffcc00 100%)",
+                  color: "#fff",
+                  boxShadow: "0 0 24px rgba(255,68,102,0.4)",
+                }}
+                data-ocid="stories.primary_button"
+              >
+                <BookOpen size={16} />
+                Browse All Stories
+                <ExternalLink size={14} />
+              </button>
+            </div>
           </div>
         </section>
       </main>

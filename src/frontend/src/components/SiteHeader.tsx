@@ -18,19 +18,20 @@ const NAV_LINKS: { label: string; page: PageName }[] = [
   { label: "Cricket & IPL", page: "cricket" },
   { label: "Business", page: "business" },
   { label: "India", page: "india" },
+  { label: "Stories", page: "stories" },
 ];
 
 const LANGUAGES = [
   { code: "en", label: "English" },
-  { code: "ur", label: "اردو" },
-  { code: "hi", label: "हिन्दी" },
-  { code: "ar", label: "العربية" },
-  { code: "fr", label: "Français" },
-  { code: "es", label: "Español" },
-  { code: "zh", label: "中文" },
+  { code: "ur", label: "\u0627\u0631\u062f\u0648" },
+  { code: "hi", label: "\u0939\u093f\u0928\u094d\u0926\u0940" },
+  { code: "ar", label: "\u0627\u0644\u0639\u0631\u0628\u064a\u0629" },
+  { code: "fr", label: "Fran\u00e7ais" },
+  { code: "es", label: "Espa\u00f1ol" },
+  { code: "zh", label: "\u4e2d\u6587" },
   { code: "de", label: "Deutsch" },
-  { code: "ru", label: "Русский" },
-  { code: "ja", label: "日本語" },
+  { code: "ru", label: "\u0420\u0443\u0441\u0441\u043a\u0438\u0439" },
+  { code: "ja", label: "\u65e5\u672c\u8a9e" },
 ];
 
 interface SiteHeaderProps {
@@ -155,13 +156,23 @@ export default function SiteHeader({
                       currentPage === link.page
                         ? "text-white"
                         : "text-white/70 hover:text-white"
-                    }`}
+                    } ${link.page === "stories" ? "stories-nav-link" : ""}`}
                     style={
                       currentPage === link.page
                         ? {
                             borderBottom: "3px solid oklch(0.43 0.18 25)",
                           }
-                        : { borderBottom: "3px solid transparent" }
+                        : link.page === "stories"
+                          ? {
+                              borderBottom: "3px solid transparent",
+                              background:
+                                "linear-gradient(90deg, #ff4466, #ff8800, #ffcc00, #00cc77, #0088ff, #ff4466)",
+                              backgroundSize: "200% auto",
+                              WebkitBackgroundClip: "text",
+                              WebkitTextFillColor: "transparent",
+                              backgroundClip: "text",
+                            }
+                          : { borderBottom: "3px solid transparent" }
                     }
                     data-ocid="nav.link"
                   >

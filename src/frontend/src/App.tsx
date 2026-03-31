@@ -9,6 +9,7 @@ import ContactPage from "./pages/ContactPage";
 import HomePage from "./pages/HomePage";
 import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
 import SectionPage from "./pages/SectionPage";
+import StoriesPage from "./pages/StoriesPage";
 import TermsOfServicePage from "./pages/TermsOfServicePage";
 
 export type PageName =
@@ -23,7 +24,8 @@ export type PageName =
   | "contact"
   | "privacy"
   | "terms"
-  | "india";
+  | "india"
+  | "stories";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +42,7 @@ const PAGE_TITLES: Record<PageName, string> = {
   privacy: "Privacy Policy | NEWS",
   terms: "Terms of Service | NEWS",
   india: "India News - Latest Headlines | NEWS",
+  stories: "Stories - Romantic, Thriller, Love & More | NEWS",
 };
 
 function removeArticleJsonLd() {
@@ -142,6 +145,15 @@ function AppContent() {
 
   if (currentPage === "terms") {
     return <TermsOfServicePage onNavigate={setCurrentPage} />;
+  }
+
+  if (currentPage === "stories") {
+    return (
+      <StoriesPage
+        onNavigate={setCurrentPage}
+        onBack={() => setCurrentPage("home")}
+      />
+    );
   }
 
   if (
