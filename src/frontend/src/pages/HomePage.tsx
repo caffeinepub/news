@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BookOpen, ChevronRight, ExternalLink, RefreshCw } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { PageName } from "../App";
 import BreakingTicker from "../components/BreakingTicker";
 import NewsCard from "../components/NewsCard";
@@ -93,6 +93,14 @@ export default function HomePage({ onNavigate, onOpenArticle }: HomePageProps) {
     refresh,
   } = useGNews();
   const [errorDismissed, setErrorDismissed] = useState(false);
+
+  useEffect(() => {
+    if (error && !errorDismissed) {
+      const timer = setTimeout(() => setErrorDismissed(true), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [error, errorDismissed]);
+
   const [lastUpdated] = useState(() => new Date());
 
   const featuredArticle = featured ?? FALLBACK_FEATURED;
@@ -121,7 +129,7 @@ export default function HomePage({ onNavigate, onOpenArticle }: HomePageProps) {
           data-ocid="news.error_state"
         >
           <span className="text-yellow-800">
-            📰 Showing sample news — live updates will resume shortly
+            📰 Showing recent news — refresh for latest updates
           </span>
           <button
             type="button"

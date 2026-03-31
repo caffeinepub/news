@@ -1,6 +1,12 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, BookOpen, ExternalLink } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { ArrowLeft, BookOpen, ExternalLink, X } from "lucide-react";
 import { useState } from "react";
 import type { PageName } from "../App";
 import SiteFooter from "../components/SiteFooter";
@@ -48,6 +54,7 @@ const STORIES_CSS = `
 `;
 
 const GENRE_COLORS: Record<string, string> = {
+  "hindi-stories": "#ff8c00",
   romantic: "#ff4466",
   "love-story": "#ff2244",
   thriller: "#ff8800",
@@ -62,7 +69,136 @@ const GENRE_COLORS: Record<string, string> = {
   comedy: "#88cc00",
 };
 
-function StoryCard({ story, index }: { story: Story; index: number }) {
+function StoryReaderModal({
+  story,
+  onClose,
+}: { story: Story | null; onClose: () => void }) {
+  if (!story) return null;
+  const genreKey = story.genre.toLowerCase().replace(/\s+/g, "-");
+  const genreColor = GENRE_COLORS[genreKey] || "#fff";
+
+  return (
+    <Dialog open={!!story} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent
+        className="max-w-lg w-full p-0 overflow-hidden border-0"
+        style={{
+          background: "oklch(0.14 0.055 240)",
+          maxHeight: "90vh",
+          display: "flex",
+          flexDirection: "column",
+        }}
+        data-ocid="stories.reader.modal"
+      >
+        {/* Cover Image */}
+        <div className="relative flex-shrink-0" style={{ height: "300px" }}>
+          <img
+            src={`https://picsum.photos/seed/${story.coverSeed}/600/300`}
+            alt={story.title}
+            className="w-full h-full object-cover"
+          />
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                "linear-gradient(to top, oklch(0.14 0.055 240) 0%, rgba(0,0,0,0.3) 60%, transparent 100%)",
+            }}
+          />
+          {/* Genre badge over image */}
+          <div className="absolute top-4 left-4">
+            <span
+              className="text-xs font-bold px-3 py-1.5 rounded-full"
+              style={{
+                background: `${genreColor}22`,
+                color: genreColor,
+                border: `1px solid ${genreColor}66`,
+                backdropFilter: "blur(8px)",
+              }}
+            >
+              {story.genre}
+            </span>
+          </div>
+          {/* Close button */}
+          <button
+            type="button"
+            onClick={onClose}
+            className="absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center transition-colors"
+            style={{ background: "rgba(0,0,0,0.6)", color: "#fff" }}
+            data-ocid="stories.reader.close_button"
+          >
+            <X size={16} />
+          </button>
+        </div>
+
+        {/* Content */}
+        <div
+          className="flex-1 overflow-y-auto p-6"
+          style={{ overscrollBehavior: "contain" }}
+        >
+          <DialogHeader className="mb-4 space-y-1 text-left">
+            <DialogTitle
+              className="text-2xl font-bold leading-tight"
+              style={{ color: genreColor }}
+            >
+              {story.title}
+            </DialogTitle>
+            <p className="text-sm text-white/60">
+              by{" "}
+              <span className="text-white/80 font-medium">{story.author}</span>
+              {story.reads && (
+                <span className="ml-3 text-xs text-white/40">
+                  · {story.reads}
+                </span>
+              )}
+            </p>
+          </DialogHeader>
+
+          {/* Divider */}
+          <div
+            className="w-16 h-0.5 mb-4 rounded-full"
+            style={{ background: genreColor }}
+          />
+
+          {/* Excerpt */}
+          <p className="text-white/75 text-sm leading-relaxed mb-6">
+            {story.excerpt}
+          </p>
+
+          {/* Source badge */}
+          <div className="flex items-center gap-2 mb-4">
+            <Badge
+              variant="outline"
+              className="text-xs border-white/20 text-white/50"
+            >
+              Source: {story.sourceSite}
+            </Badge>
+          </div>
+
+          {/* CTA button */}
+          <a
+            href={story.sourceUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-2 w-full py-3 rounded font-bold text-sm transition-opacity hover:opacity-85"
+            style={{
+              background: `linear-gradient(135deg, ${genreColor}, ${genreColor}cc)`,
+              color: "#fff",
+            }}
+            data-ocid="stories.reader.read_button"
+          >
+            Read Full Story on {story.sourceSite}
+            <ExternalLink size={14} />
+          </a>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function StoryCard({
+  story,
+  index,
+  onRead,
+}: { story: Story; index: number; onRead: (story: Story) => void }) {
   const delay = (index % 4) * 0.1;
   return (
     <div
@@ -93,9 +229,12 @@ function StoryCard({ story, index }: { story: Story; index: number }) {
             style={{
               background: "rgba(0,0,0,0.7)",
               color:
-                GENRE_COLORS[story.genre.toLowerCase().replace(" ", "-")] ||
+                GENRE_COLORS[story.genre.toLowerCase().replace(/\s+/g, "-")] ||
                 "#fff",
-              border: `1px solid ${GENRE_COLORS[story.genre.toLowerCase().replace(" ", "-")] || "#fff"}44`,
+              border: `1px solid ${
+                GENRE_COLORS[story.genre.toLowerCase().replace(/\s+/g, "-")] ||
+                "#fff"
+              }44`,
             }}
           >
             {story.genre}
@@ -124,10 +263,9 @@ function StoryCard({ story, index }: { story: Story; index: number }) {
           >
             {story.sourceSite}
           </Badge>
-          <a
-            href={story.sourceUrl}
-            target="_blank"
-            rel="noopener noreferrer"
+          <button
+            type="button"
+            onClick={() => onRead(story)}
             className="flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded transition-all hover:opacity-80 whitespace-nowrap"
             style={{
               background: "oklch(0.43 0.18 25)",
@@ -135,8 +273,8 @@ function StoryCard({ story, index }: { story: Story; index: number }) {
             }}
             data-ocid={`stories.read_button.${index + 1}`}
           >
-            Read <ExternalLink size={10} />
-          </a>
+            Read <BookOpen size={10} />
+          </button>
         </div>
       </div>
     </div>
@@ -146,7 +284,8 @@ function StoryCard({ story, index }: { story: Story; index: number }) {
 function GenreSection({
   genre,
   animDelay,
-}: { genre: StoryGenre; animDelay: number }) {
+  onRead,
+}: { genre: StoryGenre; animDelay: number; onRead: (story: Story) => void }) {
   return (
     <section
       id={genre.id}
@@ -200,7 +339,7 @@ function GenreSection({
       {/* Story Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         {genre.stories.map((story, i) => (
-          <StoryCard key={story.id} story={story} index={i} />
+          <StoryCard key={story.id} story={story} index={i} onRead={onRead} />
         ))}
       </div>
     </section>
@@ -214,6 +353,7 @@ interface StoriesPageProps {
 
 export default function StoriesPage({ onNavigate, onBack }: StoriesPageProps) {
   const [activeGenre, setActiveGenre] = useState<string | null>(null);
+  const [selectedStory, setSelectedStory] = useState<Story | null>(null);
 
   const visibleGenres = activeGenre
     ? STORY_GENRES.filter((g) => g.id === activeGenre)
@@ -223,6 +363,12 @@ export default function StoriesPage({ onNavigate, onBack }: StoriesPageProps) {
     <div className="min-h-screen bg-background">
       <style>{STORIES_CSS}</style>
       <SiteHeader onNavigate={onNavigate} currentPage="stories" />
+
+      {/* Story Reader Modal */}
+      <StoryReaderModal
+        story={selectedStory}
+        onClose={() => setSelectedStory(null)}
+      />
 
       {/* Back Button */}
       <div className="container mx-auto px-4 pt-5">
@@ -325,7 +471,12 @@ export default function StoriesPage({ onNavigate, onBack }: StoriesPageProps) {
 
       <main className="container mx-auto px-4 py-10">
         {visibleGenres.map((genre, i) => (
-          <GenreSection key={genre.id} genre={genre} animDelay={i * 0.25} />
+          <GenreSection
+            key={genre.id}
+            genre={genre}
+            animDelay={i * 0.25}
+            onRead={setSelectedStory}
+          />
         ))}
       </main>
 

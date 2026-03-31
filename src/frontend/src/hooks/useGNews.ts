@@ -3,7 +3,8 @@ import { useActor } from "./useActor";
 import type { Article } from "./useQueries";
 import { Category } from "./useQueries";
 
-const REFRESH_INTERVAL_MS = 96 * 60 * 1000;
+// NewsAPI.org: 100 requests/day. 18h active window / 77min interval × 7 sections ≈ 98 requests
+const REFRESH_INTERVAL_MS = 77 * 60 * 1000;
 const IST_OFFSET_MS = 5.5 * 60 * 60 * 1000;
 
 function getISTHour(): number {
@@ -13,13 +14,13 @@ function getISTHour(): number {
 
 function isNightTime(): boolean {
   const h = getISTHour();
-  return h >= 0 && h < 8;
+  return h >= 0 && h < 6;
 }
 
 function msUntilMorning(): number {
   const nowIST = new Date(Date.now() + IST_OFFSET_MS);
   const morning = new Date(nowIST);
-  morning.setUTCHours(8, 0, 0, 0);
+  morning.setUTCHours(6, 0, 0, 0);
   if (morning.getTime() <= nowIST.getTime()) {
     morning.setUTCDate(morning.getUTCDate() + 1);
   }

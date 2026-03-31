@@ -1,39 +1,29 @@
-# NEWS - Stories Section
+# NEWS
 
 ## Current State
-The NEWS app is a full-featured news website with sections for Latest, World, Sports, Cricket/IPL, Business, India. It has SiteHeader, SiteFooter, NewsCard, BreakingTicker components, SectionPage, ArticleDetailPage, legal pages, admin panel. Navigation is defined in SiteHeader NAV_LINKS. PageName type in App.tsx defines all routes.
+- Stories section exists with 12+ genres, each linking to external sites (Wattpad, AO3, Royal Road)
+- Story "Read" button opens external search pages (not direct story pages) — users can't read stories in-app
+- "Showing sample news" banner appears when API quota is exhausted and no localStorage cache exists
+- No Hindi stories section exists
 
 ## Requested Changes (Diff)
 
 ### Add
-- `stories` page to PageName type in App.tsx
-- StoriesPage.tsx: full page with all story genres as subsections
-  - Genres: Romantic, Love Story, Romance, Thriller, Mystery, Horror, Fantasy, Adventure, Comedy, Drama, Sci-Fi, Crime, Historical
-  - Each genre has its own subsection with 3-4 story cards
-  - Each story card links to external story sites (Wattpad, AO3, Quotev, FanFiction.net, Literotica, Royal Road, etc.) so stories are always "fresh" from real platforms
-  - Story cards show: title, genre badge, short description/excerpt, source site name, cover image (picsum), "Read Story" button that opens in new tab on the external site
-- Genre section headers with 3D CSS animated highlights (rotate, glow, shimmer effect using CSS transforms and keyframes)
-- Stories preview section on HomePage (showing top 4 stories across genres with 3D animated section header)
-- "Stories" nav link added to SiteHeader NAV_LINKS and mobile menu
-- `stories` route added to App.tsx routing logic
-- PAGE_TITLES entry for `stories`
+- Hindi stories section in storiesData.ts: genre id `hindi`, name "Hindi Stories", with 4 stories sourced from Pratilipi (pratilipi.com) and Matrubharti (matrubharti.com) — these are popular Hindi story platforms. Use direct story URLs where available.
+- In-app story reader modal: when user clicks "Read" on any story card, open a styled modal/dialog showing the full excerpt/summary, story metadata, and a prominent "Read Full Story on [site]" button that opens the external link in a new tab
+- Navigation filter tab for "Hindi" in the genre filter pills
 
 ### Modify
-- App.tsx: add `stories` to PageName, PAGE_TITLES, routing logic
-- SiteHeader.tsx: add Stories nav link
-- HomePage.tsx: add Stories preview section before the footer
+- `src/frontend/src/data/storiesData.ts`: add Hindi genre with 4 stories from Pratilipi and Matrubharti with direct URLs
+- `src/frontend/src/pages/StoriesPage.tsx`: replace the `<a>` Read button with a button that opens the in-app reader modal; add a StoryReaderModal component
+- `src/frontend/src/pages/HomePage.tsx`: make the "Showing sample news" banner less alarming — change message to "Showing recent news — refresh for latest updates" and auto-hide after 5 seconds
 
 ### Remove
 - Nothing removed
 
 ## Implementation Plan
-1. Add `stories` to PageName and routing in App.tsx
-2. Add Stories link to SiteHeader NAV_LINKS
-3. Create `src/frontend/src/data/storiesData.ts` with curated story entries per genre linking to real external platforms
-4. Create `src/frontend/src/pages/StoriesPage.tsx` with:
-   - Genre subsections with 3D animated headers (CSS keyframe animations: rotateX shimmer, glow pulse)
-   - Story cards grid per genre
-   - Back to Home button
-   - Full site header/footer
-5. Add Stories preview section to HomePage.tsx with 3D animated section header
-6. Wire everything together in App.tsx
+1. Add Hindi genre to `storiesData.ts` with 4 stories from Pratilipi/Matrubharti with real direct URLs
+2. Build `StoryReaderModal` component in StoriesPage.tsx using shadcn Dialog — shows cover image, title, author, genre badge, full excerpt (2-3 paragraphs), reads count, and a "Read Full Story" button linking to sourceUrl
+3. Update StoryCard to open modal instead of direct link
+4. Update HomePage.tsx error banner: change text, add auto-dismiss after 5s
+5. Validate and deploy
