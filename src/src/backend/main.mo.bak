@@ -1,0 +1,270 @@
+import Map "mo:core/Map";
+import Nat "mo:core/Nat";
+import Int "mo:core/Int";
+import List "mo:core/List";
+import Order "mo:core/Order";
+import Array "mo:core/Array";
+import Runtime "mo:core/Runtime";
+import Text "mo:core/Text";
+import Time "mo:core/Time";
+import Principal "mo:core/Principal";
+import OutCall "http-outcalls/outcall";
+import AccessControl "authorization/access-control";
+import MixinAuthorization "authorization/MixinAuthorization";
+
+actor {
+  let apiKey = "0f57e4f53dc04150badf7966d52ac545";
+  let baseUrl = "https://gnews.io/api/v4";
+  // 2 hours in nanoseconds
+  let cacheDuration : Int = 2 * 60 * 60 * 1_000_000_000;
+
+  var headlinesCache : Text = "";
+  var headlinesCacheTime : Int = 0;
+  var worldCache : Text = "";
+  var worldCacheTime : Int = 0;
+  var sportsCache : Text = "";
+  var sportsCacheTime : Int = 0;
+  var techCache : Text = "";
+  var techCacheTime : Int = 0;
+  var cricketCache : Text = "";
+  var cricketCacheTime : Int = 0;
+  var businessCache : Text = "";
+  var businessCacheTime : Int = 0;
+  var indiaCache : Text = "";
+  var indiaCacheTime : Int = 0;
+
+  type ArticleId = Nat;
+  public type Category = {
+    #pakistan; #world; #sports; #politics; #business; #tech; #cricket; #ipl;
+  };
+
+  public type Article = {
+    title : Text;
+    summary : Text;
+    imageUrl : Text;
+    category : Category;
+    source : Text;
+    publishedAt : Time.Time;
+    isFeatured : Bool;
+    isPinned : Bool;
+    url : Text;
+  };
+
+  public type UserProfile = { name : Text };
+
+  var nextArticleId : ArticleId = 0;
+  let articles = Map.empty<ArticleId, Article>();
+  let userProfiles = Map.empty<Principal, UserProfile>();
+
+  let accessControlState = AccessControl.initState();
+  include MixinAuthorization(accessControlState);
+
+  module Article {
+    public func compare(a1 : Article, a2 : Article) : Order.Order {
+      Text.compare(a1.title, a2.title);
+    };
+    public func compareByPublishedAt(a1 : Article, a2 : Article) : Order.Order {
+      Int.compare(a2.publishedAt, a1.publishedAt);
+    };
+  };
+
+  module ArticleId {
+    public func compare(a1 : ArticleId, a2 : ArticleId) : Order.Order {
+      Nat.compare(a1, a2);
+    };
+  };
+
+  func getArticleInternal(id : ArticleId) : Article {
+    switch (articles.get(ArticleId.compare, id)) {
+      case (null) { Runtime.trap("Article not found") };
+      case (?article) { article };
+    };
+  };
+
+  public query ({ caller }) func getCallerUserProfile() : async ?UserProfile {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized");
+    };
+    userProfiles.get(caller);
+  };
+
+  public query ({ caller }) func getUserProfile(user : Principal) : async ?UserProfile {
+    if (caller != user and not AccessControl.isAdmin(accessControlState, caller)) {
+      Runtime.trap("Unauthorized");
+    };
+    userProfiles.get(user);
+  };
+
+  public shared ({ caller }) func saveCallerUserProfile(profile : UserProfile) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized");
+    };
+    userProfiles.add(caller, profile);
+  };
+
+  public shared ({ caller }) func addManualArticle(newArticle : Article) : async ArticleId {
+    if (not AccessControl.isAdmin(accessControlState, caller)) {
+      Runtime.trap("Unauthorized");
+    };
+    let articleId = nextArticleId;
+    nextArticleId += 1;
+    let article = { newArticle with publishedAt = Time.now() };
+    articles.add(ArticleId.compare, articleId, article);
+    articleId;
+  };
+
+  public shared ({ caller }) func setFeatured(id : ArticleId) : async () {
+    if (not AccessControl.isAdmin(accessControlState, caller)) { Runtime.trap("Unauthorized") };
+    let article = getArticleInternal(id);
+    articles.add(ArticleId.compare, id, { article with isFeatured = true });
+  };
+
+  public shared ({ caller }) func setPinned(id : ArticleId, pinned : Bool) : async () {
+    if (not AccessControl.isAdmin(accessControlState, caller)) { Runtime.trap("Unauthorized") };
+    let article = getArticleInternal(id);
+    articles.add(ArticleId.compare, id, { article with isPinned = pinned });
+  };
+
+  public shared ({ caller }) func deleteArticle(id : ArticleId) : async () {
+    if (not AccessControl.isAdmin(accessControlState, caller)) { Runtime.trap("Unauthorized") };
+    if (not articles.containsKey(ArticleId.compare, id)) { Runtime.trap("Not found") };
+    articles.remove(ArticleId.compare, id);
+  };
+
+  public shared ({ caller }) func clearArticles() : async () {
+    if (not AccessControl.isAdmin(accessControlState, caller)) { Runtime.trap("Unauthorized") };
+    articles.clear();
+    nextArticleId := 0;
+  };
+
+  public query func getArticles(category : ?Category, limit : ?Nat) : async [Article] {
+    let filtered = List.empty<Article>();
+    articles.values().forEach(func(article) {
+      switch (category) {
+        case (null) { filtered.add(article) };
+        case (?cat) { if (article.category == cat) { filtered.add(article) } };
+      };
+    });
+    let sorted = filtered.toArray().sort(Article.compareByPublishedAt);
+    switch (limit) {
+      case (null) { sorted };
+      case (?lim) {
+        if (lim >= sorted.size()) { sorted } else { sorted.sliceToArray(0, lim) };
+      };
+    };
+  };
+
+  public query func getFeaturedArticle() : async ?Article {
+    let featuredArticles = List.empty<Article>();
+    articles.values().forEach(func(article) {
+      if (article.isFeatured) { featuredArticles.add(article) };
+    });
+    if (featuredArticles.isEmpty()) { return null };
+    let sorted = featuredArticles.toArray().sort(Article.compareByPublishedAt);
+    ?sorted[0];
+  };
+
+  public query func getPinnedArticles() : async [Article] {
+    let pinned = List.empty<Article>();
+    articles.values().forEach(func(article) {
+      if (article.isPinned) { pinned.add(article) };
+    });
+    pinned.toArray().sort(Article.compareByPublishedAt);
+  };
+
+  public query func getBreakingNews() : async [Article] {
+    let breaking = List.empty<Article>();
+    articles.values().forEach(func(article) {
+      if (article.isFeatured or article.isPinned) { breaking.add(article) };
+    });
+    let sorted = breaking.toArray().sort(Article.compareByPublishedAt);
+    let limit = if (sorted.size() < 5) { sorted.size() } else { 5 };
+    sorted.sliceToArray(0, limit);
+  };
+
+  public query func transform(input : OutCall.TransformationInput) : async OutCall.TransformationOutput {
+    OutCall.transform(input);
+  };
+
+  func fetchGNewsRaw(endpoint : Text) : async Text {
+    let url = endpoint # "&apikey=" # apiKey;
+    await OutCall.httpGetRequest(url, [], transform);
+  };
+
+  public shared func fetchHeadlines() : async Text {
+    let now = Time.now();
+    if (headlinesCache != "" and (now - headlinesCacheTime) < cacheDuration) {
+      return headlinesCache;
+    };
+    let result = await fetchGNewsRaw(baseUrl # "/top-headlines?topic=breaking-news&max=6&lang=en");
+    headlinesCache := result;
+    headlinesCacheTime := now;
+    result;
+  };
+
+  public shared func fetchWorldNews() : async Text {
+    let now = Time.now();
+    if (worldCache != "" and (now - worldCacheTime) < cacheDuration) {
+      return worldCache;
+    };
+    let result = await fetchGNewsRaw(baseUrl # "/top-headlines?topic=world&max=8&lang=en");
+    worldCache := result;
+    worldCacheTime := now;
+    result;
+  };
+
+  public shared func fetchSportsNews() : async Text {
+    let now = Time.now();
+    if (sportsCache != "" and (now - sportsCacheTime) < cacheDuration) {
+      return sportsCache;
+    };
+    let result = await fetchGNewsRaw(baseUrl # "/top-headlines?topic=sports&max=6&lang=en");
+    sportsCache := result;
+    sportsCacheTime := now;
+    result;
+  };
+
+  public shared func fetchTechNews() : async Text {
+    let now = Time.now();
+    if (techCache != "" and (now - techCacheTime) < cacheDuration) {
+      return techCache;
+    };
+    let result = await fetchGNewsRaw(baseUrl # "/top-headlines?topic=technology&max=4&lang=en");
+    techCache := result;
+    techCacheTime := now;
+    result;
+  };
+
+  public shared func fetchCricketNews() : async Text {
+    let now = Time.now();
+    if (cricketCache != "" and (now - cricketCacheTime) < cacheDuration) {
+      return cricketCache;
+    };
+    let result = await fetchGNewsRaw(baseUrl # "/search?q=cricket+IPL&max=6&lang=en");
+    cricketCache := result;
+    cricketCacheTime := now;
+    result;
+  };
+
+  public shared func fetchIndiaNews() : async Text {
+    let now = Time.now();
+    if (indiaCache != "" and (now - indiaCacheTime) < cacheDuration) {
+      return indiaCache;
+    };
+    let result = await fetchGNewsRaw(baseUrl # "/top-headlines?country=in&max=8&lang=en");
+    indiaCache := result;
+    indiaCacheTime := now;
+    result;
+  };
+
+  public shared func fetchBusinessNews() : async Text {
+    let now = Time.now();
+    if (businessCache != "" and (now - businessCacheTime) < cacheDuration) {
+      return businessCache;
+    };
+    let result = await fetchGNewsRaw(baseUrl # "/top-headlines?topic=business&max=6&lang=en");
+    businessCache := result;
+    businessCacheTime := now;
+    result;
+  };
+};

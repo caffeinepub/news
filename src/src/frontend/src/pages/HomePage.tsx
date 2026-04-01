@@ -1,0 +1,746 @@
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { BookOpen, ChevronRight, ExternalLink, RefreshCw } from "lucide-react";
+import { useEffect, useState } from "react";
+import type { PageName } from "../App";
+import BreakingTicker from "../components/BreakingTicker";
+import NewsCard from "../components/NewsCard";
+import SiteFooter from "../components/SiteFooter";
+import SiteHeader from "../components/SiteHeader";
+import { STORY_GENRES } from "../data/storiesData";
+import { useGNews } from "../hooks/useGNews";
+import type { Article } from "../hooks/useQueries";
+import { Category } from "../hooks/useQueries";
+
+const FALLBACK_FEATURED: Article = {
+  title: "World Leaders Gather at G20 Summit to Address Global Economic Crisis",
+  summary:
+    "Heads of state from 20 nations convene to tackle rising inflation, debt restructuring, and climate financing.",
+  source: "Reuters",
+  url: "https://reuters.com",
+  imageUrl: "https://picsum.photos/seed/g20-summit-world/800/500",
+  category: Category.world,
+  isFeatured: true,
+  isPinned: false,
+  publishedAt: BigInt(Date.now()) * BigInt(1_000_000),
+};
+
+const HOME_STORIES_CSS = `
+  @keyframes storiesHeroFloat {
+    0%, 100% { transform: perspective(600px) rotateX(0deg) translateZ(0px); letter-spacing: 0.1em; }
+    50% { transform: perspective(600px) rotateX(6deg) translateZ(12px); letter-spacing: 0.15em; }
+  }
+  @keyframes storiesShimmer {
+    0% { background-position: -200% center; }
+    100% { background-position: 200% center; }
+  }
+  .stories-preview-title {
+    animation: storiesHeroFloat 3.5s ease-in-out infinite, storiesShimmer 3.5s linear infinite;
+    display: inline-block;
+    transform-style: preserve-3d;
+    background: linear-gradient(90deg, #ff4466 0%, #ff8800 20%, #ffcc00 40%, #00cc77 60%, #0088ff 80%, #ff4466 100%);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+`;
+
+const PREVIEW_GENRES = STORY_GENRES.slice(0, 4);
+
+function SectionHeader({
+  title,
+  onViewAll,
+}: { title: string; onViewAll: () => void }) {
+  return (
+    <div className="flex items-center gap-4 mb-6">
+      <h2 className="section-heading">{title}</h2>
+      <div
+        className="flex-1 h-px"
+        style={{
+          background:
+            "linear-gradient(90deg, oklch(0.43 0.18 25) 0%, oklch(0.87 0 0) 60%)",
+        }}
+      />
+      <button
+        type="button"
+        onClick={onViewAll}
+        className="flex items-center gap-1 text-xs font-bold text-news-red hover:text-news-red-dark transition-colors uppercase tracking-widest whitespace-nowrap"
+        data-ocid="section.link"
+      >
+        View All <ChevronRight size={14} />
+      </button>
+    </div>
+  );
+}
+
+interface HomePageProps {
+  onNavigate: (page: PageName) => void;
+  onOpenArticle: (article: Article) => void;
+}
+
+export default function HomePage({ onNavigate, onOpenArticle }: HomePageProps) {
+  const {
+    featured,
+    headlines,
+    world,
+    sports,
+    cricket,
+    business,
+    india,
+    isLoading,
+    error,
+    refresh,
+  } = useGNews();
+  const [errorDismissed, setErrorDismissed] = useState(false);
+
+  useEffect(() => {
+    if (error && !errorDismissed) {
+      const timer = setTimeout(() => setErrorDismissed(true), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [error, errorDismissed]);
+
+  const [lastUpdated] = useState(() => new Date());
+
+  const featuredArticle = featured ?? FALLBACK_FEATURED;
+  const headlinesList = headlines.length > 0 ? headlines : [];
+  const latestList = world.slice(0, 4);
+  const sportsList = sports;
+  const worldList = world.slice(0, 4);
+  const businessList = business.slice(0, 4);
+  const indiaList = india.slice(0, 4);
+
+  const tickerHeadlines = [
+    ...(featured ? [featured.title] : []),
+    ...headlines.map((a) => a.title),
+  ];
+
+  return (
+    <div className="min-h-screen bg-background">
+      <style>{HOME_STORIES_CSS}</style>
+      <SiteHeader onNavigate={onNavigate} currentPage="home" />
+      <BreakingTicker headlines={tickerHeadlines} />
+
+      {/* Error banner */}
+      {error && !errorDismissed && (
+        <div
+          className="bg-yellow-50 border-b border-yellow-200 px-4 py-2 flex items-center justify-between text-sm"
+          data-ocid="news.error_state"
+        >
+          <span className="text-yellow-800">
+            📰 Showing recent news — refresh for latest updates
+          </span>
+          <button
+            type="button"
+            onClick={() => setErrorDismissed(true)}
+            className="text-yellow-600 hover:text-yellow-900 font-bold ml-4 text-lg leading-none"
+            aria-label="Dismiss"
+          >
+            ×
+          </button>
+        </div>
+      )}
+
+      {/* Last updated + refresh */}
+      <div className="container mx-auto px-4 pt-3 pb-1 flex items-center justify-end gap-2 text-xs text-muted-foreground">
+        <span>Last updated: {lastUpdated.toLocaleTimeString()}</span>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-6 w-6"
+          onClick={refresh}
+          disabled={isLoading}
+          aria-label="Refresh news"
+          data-ocid="news.refresh_button"
+        >
+          <RefreshCw className={`h-3 w-3 ${isLoading ? "animate-spin" : ""}`} />
+        </Button>
+      </div>
+
+      <main id="home">
+        {/* Hero + Sidebar */}
+        <section className="container mx-auto px-4 py-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2">
+              {isLoading ? (
+                <Skeleton
+                  className="w-full h-[400px] rounded-sm"
+                  data-ocid="hero.loading_state"
+                />
+              ) : (
+                <NewsCard
+                  article={featuredArticle}
+                  variant="hero"
+                  index={0}
+                  onOpen={onOpenArticle}
+                />
+              )}
+            </div>
+
+            <div className="lg:col-span-1">
+              <div className="bg-card border border-border rounded-sm p-4 h-full">
+                <h2
+                  className="font-condensed font-bold text-sm uppercase tracking-widest text-white px-3 py-2.5 -mx-4 -mt-4 mb-4 flex items-center gap-2"
+                  style={{
+                    background:
+                      "linear-gradient(90deg, oklch(0.27 0.06 240), oklch(0.35 0.065 240))",
+                  }}
+                >
+                  <span className="inline-block w-1.5 h-4 bg-news-red rounded-sm" />
+                  TOP HEADLINES
+                </h2>
+                {isLoading ? (
+                  <div data-ocid="headlines.loading_state">
+                    {["a", "b", "c", "d"].map((k) => (
+                      <div
+                        key={k}
+                        className="flex gap-3 py-3 border-b border-border"
+                      >
+                        <Skeleton className="w-20 h-16 flex-shrink-0" />
+                        <div className="flex-1">
+                          <Skeleton className="h-3 mb-1" />
+                          <Skeleton className="h-3 w-3/4" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div data-ocid="headlines.list">
+                    {headlinesList.slice(0, 5).map((article, i) => (
+                      <div
+                        key={article.title}
+                        data-ocid={`headlines.item.${i + 1}`}
+                      >
+                        <NewsCard
+                          article={article}
+                          variant="sidebar"
+                          index={i + 10}
+                          onOpen={onOpenArticle}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Latest News */}
+        <section id="latest" className="container mx-auto px-4 py-8">
+          <SectionHeader
+            title="Latest News"
+            onViewAll={() => onNavigate("latest")}
+          />
+          {isLoading ? (
+            <div
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5"
+              data-ocid="latest.loading_state"
+            >
+              {["a", "b", "c", "d"].map((k) => (
+                <Skeleton key={k} className="h-72 rounded-sm" />
+              ))}
+            </div>
+          ) : (
+            <div
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5"
+              data-ocid="latest.list"
+            >
+              {latestList.map((article, i) => (
+                <div key={article.title} data-ocid={`latest.item.${i + 1}`}>
+                  <NewsCard
+                    article={article}
+                    variant="grid"
+                    index={i + 20}
+                    onOpen={onOpenArticle}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
+          <div className="mt-5 text-center">
+            <Button
+              variant="outline"
+              onClick={() => onNavigate("latest")}
+              className="border-news-red text-news-red hover:bg-news-red hover:text-white font-bold uppercase tracking-wider"
+              data-ocid="latest.secondary_button"
+            >
+              View All Latest News <ChevronRight size={16} className="ml-1" />
+            </Button>
+          </div>
+        </section>
+
+        {/* Sports News */}
+        <section id="sports" className="section-tinted py-10">
+          <div className="container mx-auto px-4">
+            <div
+              className="text-white rounded-sm px-6 py-5 mb-6 flex items-center gap-4"
+              style={{
+                background:
+                  "linear-gradient(135deg, oklch(0.27 0.06 240) 0%, oklch(0.22 0.065 240) 100%)",
+                borderLeft: "5px solid oklch(0.43 0.18 25)",
+              }}
+            >
+              <span className="text-3xl">⚽</span>
+              <div>
+                <h2 className="font-condensed font-bold text-xl uppercase tracking-widest">
+                  Sports News
+                </h2>
+                <p className="text-white/60 text-sm">
+                  Global sports updates, results & highlights
+                </p>
+              </div>
+              <div className="ml-auto flex gap-3 items-center">
+                <span className="bg-news-red text-white text-xs font-bold px-2 py-1 rounded-sm animate-pulse">
+                  LIVE
+                </span>
+                <button
+                  type="button"
+                  onClick={() => onNavigate("sports")}
+                  className="flex items-center gap-1 text-white/80 hover:text-white text-xs font-bold uppercase tracking-widest transition-colors"
+                  data-ocid="sports.link"
+                >
+                  View All <ChevronRight size={14} />
+                </button>
+              </div>
+            </div>
+
+            {isLoading ? (
+              <div
+                className="grid grid-cols-1 lg:grid-cols-3 gap-5"
+                data-ocid="sports.loading_state"
+              >
+                <Skeleton className="h-80 rounded-sm lg:col-span-1" />
+                <div className="lg:col-span-2 space-y-3">
+                  {["a", "b", "c"].map((k) => (
+                    <Skeleton key={k} className="h-24" />
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div
+                className="grid grid-cols-1 lg:grid-cols-3 gap-5"
+                data-ocid="sports.list"
+              >
+                <div data-ocid="sports.item.1">
+                  {sportsList[0] && (
+                    <NewsCard
+                      article={sportsList[0]}
+                      variant="grid"
+                      index={30}
+                      onOpen={onOpenArticle}
+                    />
+                  )}
+                </div>
+                <div className="lg:col-span-2 space-y-4">
+                  {sportsList.slice(1, 4).map((article, i) => (
+                    <div key={article.title} data-ocid={`sports.item.${i + 2}`}>
+                      <NewsCard
+                        article={article}
+                        variant="small"
+                        index={i + 31}
+                        onOpen={onOpenArticle}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            <div className="mt-5 text-center">
+              <Button
+                variant="outline"
+                onClick={() => onNavigate("sports")}
+                className="border-navy text-navy hover:bg-navy hover:text-white font-bold uppercase tracking-wider"
+                data-ocid="sports.secondary_button"
+              >
+                View All Sports <ChevronRight size={16} className="ml-1" />
+              </Button>
+            </div>
+          </div>
+        </section>
+
+        {/* Cricket & IPL */}
+        <section id="ipl" className="container mx-auto px-4 py-10">
+          <div
+            className="text-white rounded-sm px-6 py-5 mb-6 flex items-center gap-4"
+            style={{
+              background:
+                "linear-gradient(135deg, oklch(0.27 0.06 240) 0%, oklch(0.22 0.065 240) 100%)",
+              borderLeft: "5px solid oklch(0.43 0.18 25)",
+            }}
+          >
+            <span className="text-3xl">🏏</span>
+            <div>
+              <h2 className="font-condensed font-bold text-xl uppercase tracking-widest">
+                Cricket &amp; IPL
+              </h2>
+              <p className="text-white/60 text-sm">
+                Live scores, IPL updates &amp; international cricket news
+              </p>
+            </div>
+            <div className="ml-auto flex gap-3 items-center">
+              <span className="bg-news-red text-white text-xs font-bold px-2 py-1 rounded-sm animate-pulse">
+                LIVE
+              </span>
+              <button
+                type="button"
+                onClick={() => onNavigate("cricket")}
+                className="flex items-center gap-1 text-white/80 hover:text-white text-xs font-bold uppercase tracking-widest transition-colors"
+                data-ocid="cricket.link"
+              >
+                View All <ChevronRight size={14} />
+              </button>
+            </div>
+          </div>
+
+          {isLoading ? (
+            <div
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5"
+              data-ocid="ipl.loading_state"
+            >
+              {["a", "b", "c", "d"].map((k) => (
+                <Skeleton key={k} className="h-72 rounded-sm" />
+              ))}
+            </div>
+          ) : (
+            <div
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5"
+              data-ocid="ipl.list"
+            >
+              {cricket.slice(0, 4).map((article, i) => (
+                <div key={article.title} data-ocid={`ipl.item.${i + 1}`}>
+                  <NewsCard
+                    article={article}
+                    variant="grid"
+                    index={i + 50}
+                    onOpen={onOpenArticle}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
+          <div className="mt-5 text-center">
+            <Button
+              variant="outline"
+              onClick={() => onNavigate("cricket")}
+              className="border-news-red text-news-red hover:bg-news-red hover:text-white font-bold uppercase tracking-wider"
+              data-ocid="cricket.secondary_button"
+            >
+              View All Cricket & IPL <ChevronRight size={16} className="ml-1" />
+            </Button>
+          </div>
+        </section>
+
+        {/* Business News */}
+        <section id="business" className="section-tinted py-10">
+          <div className="container mx-auto px-4">
+            <div
+              className="text-white rounded-sm px-6 py-5 mb-6 flex items-center gap-4"
+              style={{
+                background:
+                  "linear-gradient(135deg, oklch(0.27 0.06 240) 0%, oklch(0.22 0.065 240) 100%)",
+                borderLeft: "5px solid oklch(0.43 0.18 25)",
+              }}
+            >
+              <span className="text-3xl">💼</span>
+              <div>
+                <h2 className="font-condensed font-bold text-xl uppercase tracking-widest">
+                  Business News
+                </h2>
+                <p className="text-white/60 text-sm">
+                  Markets, economy, trade &amp; finance updates
+                </p>
+              </div>
+              <div className="ml-auto flex gap-3 items-center">
+                <button
+                  type="button"
+                  onClick={() => onNavigate("business")}
+                  className="flex items-center gap-1 text-white/80 hover:text-white text-xs font-bold uppercase tracking-widest transition-colors"
+                  data-ocid="business.link"
+                >
+                  View All <ChevronRight size={14} />
+                </button>
+              </div>
+            </div>
+
+            {isLoading ? (
+              <div
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5"
+                data-ocid="business.loading_state"
+              >
+                {["a", "b", "c", "d"].map((k) => (
+                  <Skeleton key={k} className="h-72 rounded-sm" />
+                ))}
+              </div>
+            ) : (
+              <div
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5"
+                data-ocid="business.list"
+              >
+                {businessList.map((article, i) => (
+                  <div key={article.title} data-ocid={`business.item.${i + 1}`}>
+                    <NewsCard
+                      article={article}
+                      variant="grid"
+                      index={i + 60}
+                      onOpen={onOpenArticle}
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+            <div className="mt-5 text-center">
+              <Button
+                variant="outline"
+                onClick={() => onNavigate("business")}
+                className="border-navy text-navy hover:bg-navy hover:text-white font-bold uppercase tracking-wider"
+                data-ocid="business.secondary_button"
+              >
+                View All Business <ChevronRight size={16} className="ml-1" />
+              </Button>
+            </div>
+          </div>
+        </section>
+
+        {/* India News */}
+        <section id="india" className="section-tinted py-10">
+          <div className="container mx-auto px-4">
+            <SectionHeader
+              title="India News"
+              onViewAll={() => onNavigate("india")}
+            />
+            {isLoading ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {[...Array(4)].map((_, i) => (
+                  // biome-ignore lint/suspicious/noArrayIndexKey: skeleton list
+                  <Skeleton key={i} className="h-52 rounded-sm" />
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {indiaList.map((article, i) => (
+                  <div key={article.title} data-ocid={`india.item.${i + 1}`}>
+                    <NewsCard
+                      article={article}
+                      variant="grid"
+                      index={i + 70}
+                      onOpen={onOpenArticle}
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+            <div className="mt-5 text-center">
+              <Button
+                variant="outline"
+                onClick={() => onNavigate("india")}
+                className="border-news-red text-news-red hover:bg-news-red hover:text-white transition-colors text-xs font-bold uppercase tracking-widest rounded-sm"
+                data-ocid="india.primary_button"
+              >
+                All India News
+              </Button>
+            </div>
+          </div>
+        </section>
+
+        {/* World News */}
+        <section id="world" className="container mx-auto px-4 py-10">
+          <SectionHeader
+            title="Worldwide News"
+            onViewAll={() => onNavigate("world")}
+          />
+          {isLoading ? (
+            <div
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5"
+              data-ocid="world.loading_state"
+            >
+              {["a", "b", "c", "d"].map((k) => (
+                <Skeleton key={k} className="h-72 rounded-sm" />
+              ))}
+            </div>
+          ) : (
+            <div
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5"
+              data-ocid="world.list"
+            >
+              {worldList.map((article, i) => (
+                <div key={article.title} data-ocid={`world.item.${i + 1}`}>
+                  <NewsCard
+                    article={article}
+                    variant="grid"
+                    index={i + 40}
+                    onOpen={onOpenArticle}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
+          <div className="mt-5 text-center">
+            <Button
+              variant="outline"
+              onClick={() => onNavigate("world")}
+              className="border-news-red text-news-red hover:bg-news-red hover:text-white font-bold uppercase tracking-wider"
+              data-ocid="world.secondary_button"
+            >
+              View All World News <ChevronRight size={16} className="ml-1" />
+            </Button>
+          </div>
+        </section>
+
+        {/* Stories Section Preview */}
+        <section
+          id="stories"
+          className="py-14"
+          style={{
+            background:
+              "linear-gradient(180deg, oklch(0.16 0.055 240) 0%, oklch(0.13 0.045 250) 100%)",
+          }}
+          data-ocid="stories.section"
+        >
+          <div className="container mx-auto px-4">
+            {/* 3D Animated Section Header */}
+            <div className="text-center mb-10">
+              <div className="mb-3">
+                <span
+                  className="stories-preview-title font-bold uppercase"
+                  style={{ fontSize: "clamp(2.5rem, 7vw, 5rem)" }}
+                >
+                  STORIES
+                </span>
+              </div>
+              <p className="text-white/50 text-sm max-w-lg mx-auto">
+                Romantic • Thriller • Fantasy • Horror • Drama &amp; more —
+                updated daily from top story platforms
+              </p>
+            </div>
+
+            {/* Genre Preview Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
+              {PREVIEW_GENRES.map((genre) => {
+                const story = genre.stories[0];
+                return (
+                  <button
+                    key={genre.id}
+                    type="button"
+                    className="group relative overflow-hidden rounded cursor-pointer text-left w-full"
+                    style={{
+                      background: "oklch(0.20 0.06 240)",
+                      border: `1px solid ${genre.color}33`,
+                      transition: "transform 0.3s ease, box-shadow 0.3s ease",
+                    }}
+                    onClick={() => onNavigate("stories")}
+                    onMouseEnter={(e) => {
+                      (e.currentTarget as HTMLButtonElement).style.transform =
+                        "translateY(-5px)";
+                      (e.currentTarget as HTMLButtonElement).style.boxShadow =
+                        `0 16px 32px ${genre.glowColor}`;
+                    }}
+                    onMouseLeave={(e) => {
+                      (e.currentTarget as HTMLButtonElement).style.transform =
+                        "translateY(0)";
+                      (e.currentTarget as HTMLButtonElement).style.boxShadow =
+                        "none";
+                    }}
+                    data-ocid={`stories.item.${PREVIEW_GENRES.indexOf(genre) + 1}`}
+                  >
+                    {/* Cover Image */}
+                    <div
+                      className="relative overflow-hidden"
+                      style={{ paddingBottom: "70%" }}
+                    >
+                      <img
+                        src={`https://picsum.photos/seed/${story.coverSeed}/400/280`}
+                        alt={story.title}
+                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        loading="lazy"
+                      />
+                      <div
+                        className="absolute inset-0"
+                        style={{
+                          background: `linear-gradient(to top, ${genre.glowColor.replace("0.6", "0.9")} 0%, transparent 60%)`,
+                        }}
+                      />
+                      {/* Genre Label */}
+                      <div className="absolute bottom-3 left-3 right-3">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-2xl">{genre.emoji}</span>
+                          <span
+                            className="font-bold text-sm uppercase tracking-widest"
+                            style={{
+                              color: genre.color,
+                              textShadow: `0 0 12px ${genre.glowColor}`,
+                            }}
+                          >
+                            {genre.name}
+                          </span>
+                        </div>
+                        <p className="text-white/80 text-xs font-medium line-clamp-2">
+                          {story.title}
+                        </p>
+                      </div>
+                    </div>
+                    {/* Footer */}
+                    <div className="px-4 py-3 flex items-center justify-between">
+                      <span className="text-white/50 text-xs">
+                        {genre.stories.length} stories
+                      </span>
+                      <span
+                        className="text-xs font-bold flex items-center gap-1"
+                        style={{ color: genre.color }}
+                      >
+                        <BookOpen size={12} /> {genre.sourceSite}
+                      </span>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Genre chips row */}
+            <div className="flex flex-wrap justify-center gap-2 mb-8">
+              {STORY_GENRES.slice(4).map((genre) => (
+                <button
+                  key={genre.id}
+                  type="button"
+                  onClick={() => onNavigate("stories")}
+                  className="text-xs font-bold px-3 py-1.5 rounded-full transition-all hover:opacity-80"
+                  style={{
+                    background: `${genre.color}1a`,
+                    color: genre.color,
+                    border: `1px solid ${genre.color}44`,
+                  }}
+                  data-ocid={`stories.${genre.id}.tab`}
+                >
+                  {genre.emoji} {genre.name}
+                </button>
+              ))}
+            </div>
+
+            {/* CTA */}
+            <div className="text-center">
+              <button
+                type="button"
+                onClick={() => onNavigate("stories")}
+                className="inline-flex items-center gap-2 px-8 py-3 font-bold uppercase tracking-widest text-sm rounded transition-all hover:scale-105"
+                style={{
+                  background:
+                    "linear-gradient(135deg, #ff4466 0%, #ff8800 50%, #ffcc00 100%)",
+                  color: "#fff",
+                  boxShadow: "0 0 24px rgba(255,68,102,0.4)",
+                }}
+                data-ocid="stories.primary_button"
+              >
+                <BookOpen size={16} />
+                Browse All Stories
+                <ExternalLink size={14} />
+              </button>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <SiteFooter onNavigate={onNavigate} />
+    </div>
+  );
+}
